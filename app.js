@@ -250,7 +250,7 @@ function evaluate() {
   } else if (!redFlagReviewComplete()) {
     level = "warn";
     title = "Red flag review required";
-    detail = "Routine pain referral support is locked until all red flags are reviewed and the no-red-flags attestation is selected.";
+    detail = "Review each red flag symptom first. Continue only when no red flags are present, then select the no-red-flags attestation to unlock routine pain referral support.";
   } else if ($("duration").value === "acute" && referralScore >= 45) {
     level = "warn";
     title = "Acute pain: expedited review or eConsult";
