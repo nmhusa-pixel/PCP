@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#151816">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pain Referral">
+    <title>Pain Referral Assistant</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/app-icon-32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/app-icon-180.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Primary care decision support</p>
+            <h1>Pain Referral Assistant</h1>
+          </div>
+          <div class="top-actions">
+            <button id="installApp" type="button" class="install-button" hidden>Install</button>
+            <div class="status-pill" id="readinessPill">Incomplete</div>
+          </div>
+        </header>
+
+        <section class="panel intake-panel" aria-labelledby="intakeTitle">
+          <div class="panel-title">
+            <h2 id="intakeTitle">Clinical Intake</h2>
+            <span id="completionText">0% complete</span>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Patient initials
+              <input id="patientInitials" type="text" placeholder="e.g., J.D.">
+            </label>
+            <label>
+              Age
+              <input id="age" type="number" min="18" max="110" placeholder="Adult">
+            </label>
+            <label>
+              Duration
+              <select id="duration">
+                <option value="acute">Acute, less than 4 weeks</option>
+                <option value="subacute">Subacute, 4-12 weeks</option>
+                <option value="chronic">Chronic, more than 12 weeks</option>
+              </select>
+            </label>
+            <label>
+              Pain score
+              <input id="painScore" type="range" min="0" max="10" value="6">
+              <span class="range-value"><span id="painValue">6</span>/10</span>
+            </label>
+            <label>
+              Functional impact
+              <select id="functionImpact">
+                <option value="mild">Mild, working/ADLs mostly preserved</option>
+                <option value="moderate">Moderate, limits work/sleep/ADLs</option>
+                <option value="severe">Severe, disabling or escalating</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel red-flag-panel" aria-labelledby="redFlagsTitle">
+          <div class="panel-title">
+            <h2 id="redFlagsTitle">Red Flag Symptoms</h2>
+            <button class="ghost-button" type="button" data-clear="redFlags">Clear</button>
+          </div>
+          <div class="check-grid" id="redFlags"></div>
+          <label class="check-item attestation">
+            <input type="checkbox" id="noRedFlags">
+            <span>No red flags after review<small>I reviewed all red flag items above and none are present.</small></span>
+          </label>
+        </section>
+
+        <section class="panel gated-section" data-gated="true" aria-labelledby="patternTitle">
+          <div class="panel-title">
+            <h2 id="patternTitle">Pain Pattern</h2>
+            <span>Location and phenotype</span>
+          </div>
+          <div class="pain-layout">
+            <div class="body-map" aria-hidden="true">
+              <img class="anatomy-base" src="clinical-skeleton-body-map.png" alt="">
+              <svg class="highlight-map" viewBox="0 0 956 1646" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <clipPath id="clip-skull"><path d="M386 47 C329 86 322 214 360 286 C389 342 434 366 478 366 C522 366 567 342 596 286 C634 214 627 86 570 47 C522 18 434 18 386 47 Z"></path></clipPath>
+                  <clipPath id="clip-cervical"><path d="M430 268 C455 252 501 252 526 268 L535 388 C500 405 456 405 421 388 Z"></path></clipPath>
+                  <clipPath id="clip-thoracic"><path d="M426 372 C457 354 499 354 530 372 L548 740 C505 762 451 762 408 740 Z"></path></clipPath>
+                  <clipPath id="clip-lumbar"><path d="M410 714 C449 694 507 694 546 714 L557 956 C512 980 444 980 399 956 Z"></path></clipPath>
+                  <clipPath id="clip-ribs"><path d="M276 302 C340 268 424 284 478 327 C532 284 616 268 680 302 C700 450 665 616 587 704 C548 668 512 623 478 580 C444 623 408 668 369 704 C291 616 256 450 276 302 Z"></path></clipPath>
+                  <clipPath id="clip-pelvis"><path d="M287 686 C353 650 425 668 478 749 C531 668 603 650 669 686 C677 805 620 898 527 915 C505 876 493 822 478 771 C463 822 451 876 429 915 C336 898 279 805 287 686 Z"></path></clipPath>
+                  <clipPath id="clip-sacroiliac"><path d="M411 749 C446 749 470 771 478 813 C449 841 407 835 384 802 C369 777 383 750 411 749 Z M545 749 C510 749 486 771 478 813 C507 841 549 835 572 802 C587 777 573 750 545 749 Z"></path></clipPath>
+                  <clipPath id="clip-leftArm"><path d="M287 308 C248 335 227 397 217 507 C206 596 184 681 151 755 C118 788 95 842 83 920 C123 954 188 958 229 925 C226 838 226 782 247 730 C281 648 300 548 319 432 C327 375 329 335 287 308 Z"></path></clipPath>
+                  <clipPath id="clip-rightArm"><path d="M669 308 C708 335 729 397 739 507 C750 596 772 681 805 755 C838 788 861 842 873 920 C833 954 768 958 727 925 C730 838 730 782 709 730 C675 648 656 548 637 432 C629 375 627 335 669 308 Z"></path></clipPath>
+                  <clipPath id="clip-leftLeg"><path d="M340 879 C399 852 449 877 463 951 C457 1178 425 1374 382 1568 C329 1586 284 1566 266 1518 C286 1308 304 1101 317 912 C320 894 328 884 340 879 Z"></path></clipPath>
+                  <clipPath id="clip-rightLeg"><path d="M616 879 C557 852 507 877 493 951 C499 1178 531 1374 574 1568 C627 1586 672 1566 690 1518 C670 1308 652 1101 639 912 C636 894 628 884 616 879 Z"></path></clipPath>
+                </defs>
+                <image class="region-image" data-region="skull" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-skull)"></image>
+                <image class="region-image" data-region="cervical" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-cervical)"></image>
+                <image class="region-image" data-region="thoracic" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-thoracic)"></image>
+                <image class="region-image" data-region="lumbar" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-lumbar)"></image>
+                <image class="region-image" data-region="ribs" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-ribs)"></image>
+                <image class="region-image" data-region="pelvis" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-pelvis)"></image>
+                <image class="region-image" data-region="sacroiliac" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-sacroiliac)"></image>
+                <image class="region-image" data-region="leftArm" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-leftArm)"></image>
+                <image class="region-image" data-region="rightArm" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-rightArm)"></image>
+                <image class="region-image" data-region="leftLeg" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-leftLeg)"></image>
+                <image class="region-image" data-region="rightLeg" href="clinical-skeleton-body-map.png" x="0" y="0" width="956" height="1646" clip-path="url(#clip-rightLeg)"></image>
+              </svg>
+            </div>
+            <div class="check-grid" id="painPatterns"></div>
+          </div>
+        </section>
+
+        <section class="panel gated-section" data-gated="true" aria-labelledby="workupTitle">
+          <div class="panel-title">
+            <h2 id="workupTitle">Completed Workup</h2>
+            <span>PT, imaging, medication trials</span>
+          </div>
+          <div class="check-grid" id="workupChecks"></div>
+          <div class="form-grid compact">
+            <label>
+              PT sessions completed
+              <input id="ptSessions" type="number" min="0" max="99" value="0">
+            </label>
+            <label>
+              Imaging date / result
+              <input id="imagingSummary" type="text" placeholder="e.g., MRI lumbar 5/2026: L4-5 stenosis">
+            </label>
+            <label>
+              Medication response
+              <textarea id="medSummary" rows="3" placeholder="Brief response, intolerance, contraindications, or ongoing regimen"></textarea>
+            </label>
+            <label>
+              Prior procedures or specialist input
+              <textarea id="priorCare" rows="3" placeholder="Injections, ortho/neuro consult, behavioral health, etc."></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel gated-section" data-gated="true" aria-labelledby="contextTitle">
+          <div class="panel-title">
+            <h2 id="contextTitle">Referral Context</h2>
+            <span>What is the pain clinic being asked to do?</span>
+          </div>
+          <div class="check-grid" id="referralContext"></div>
+          <label class="full-label">
+            Referral question
+            <textarea id="referralQuestion" rows="3" placeholder="e.g., Evaluate for epidural steroid injection and multimodal chronic pain plan"></textarea>
+          </label>
+        </section>
+      </section>
+
+      <aside class="decision-rail" aria-labelledby="decisionTitle">
+        <section class="decision-card">
+          <p class="eyebrow">AI-style rules engine</p>
+          <h2 id="decisionTitle">Recommendation</h2>
+          <div id="recommendation" class="recommendation"></div>
+          <div class="meter" aria-hidden="true"><span id="meterFill"></span></div>
+          <p id="scoreText" class="score-text"></p>
+        </section>
+
+        <section class="decision-card">
+          <h2>Missing Before Referral</h2>
+          <ul id="missingList" class="clean-list"></ul>
+        </section>
+
+        <section class="decision-card">
+          <h2>Referral Note</h2>
+          <textarea id="referralNote" rows="13" readonly></textarea>
+          <div class="button-row">
+            <button id="copyNote" type="button">Copy Note</button>
+            <button id="printPage" type="button" class="secondary">Print</button>
+          </div>
+        </section>
+
+        <section class="decision-card">
+          <h2>Sources</h2>
+          <ul class="source-list">
+            <li><a href="https://www.vmfh.org/content/dam/vmfhorg/pdf/refer-a-patient/Back-Pain-Referral-Algorithm-Primary-Care.pdf">VMFH back pain referral algorithm</a></li>
+            <li><a href="https://painmed.org/for-the-primary-care-provider-when-to-refer-to-a-pain-specialist/">AAPM referral recommendations</a></li>
+            <li><a href="https://www.cdc.gov/mmwr/volumes/71/rr/rr7103a1.htm">CDC opioid prescribing guideline, 2022</a></li>
+            <li><a href="https://acsearch.acr.org/docs/69483/Narrative/">ACR low back pain imaging criteria</a></li>
+            <li><a href="https://www.acponline.org/sites/default/files/acp-policy-library/guidelines/noninvasive_treatments_for_chronic_low_back_pain_2017.pdf">ACP low back pain treatment guideline</a></li>
+            <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5903506/">Evidence-based pain medicine for primary care physicians</a></li>
+            <li><a href="https://spinepaindocs.com/about/pain-chart/">Spine Pain Institute referral pain chart</a></li>
+            <li><a href="https://onbaseext.phs.org/PEL/DisplayDocument?ContentID=PEL_00955399">Chronic pain management algorithm</a></li>
+            <li><a href="https://pathwaysbc-production-content-item-documents.s3.amazonaws.com/documents/7229/original/Chronic%20Pain%20Algorithm%20Oct%2017%202024%20-%20FINAL%20.pdf?1729181409">Pathways BC chronic pain algorithm, 2024</a></li>
+            <li><a href="https://formularymk.nhs.uk/docs/formulary/04/Chronic%20Pain%20Guideline%20for%20Primary%20Care%20July%202020.pdf">Milton Keynes NHS chronic pain guideline, 2020</a></li>
+          </ul>
+          <p class="disclaimer">Clinical decision support only. It does not replace clinician judgment, local policy, payer rules, or emergency evaluation.</p>
+        </section>
+      </aside>
+    </main>
+
+    <dialog id="installDialog" class="install-dialog">
+      <div class="dialog-header">
+        <h2>Install App</h2>
+        <button id="closeInstallDialog" type="button" class="icon-button" aria-label="Close">x</button>
+      </div>
+      <p id="installMessage"></p>
+    </dialog>
+    <script src="app.js"></script>
+  </body>
+</html>

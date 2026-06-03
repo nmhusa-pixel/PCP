@@ -1,0 +1,450 @@
+const redFlags = [
+  ["bowelBladder", "New bowel or bladder incontinence", "Possible cauda equina or cord compression"],
+  ["saddle", "Saddle anesthesia or bilateral perineal numbness", "Emergency spine evaluation trigger"],
+  ["bilateralSciatica", "Severe low back pain with bilateral sciatica/leg weakness", "Cauda equina pattern"],
+  ["fever", "Fever, infection risk, or immunosuppression", "Consider infection workup and urgent imaging"],
+  ["cancer", "Cancer history or unexplained weight loss", "Malignancy must be excluded"],
+  ["trauma", "Acute trauma or suspected fracture/instability", "Urgent imaging or surgical pathway"],
+  ["motorLoss", "Progressive motor deficit or significant motor radiculopathy", "Urgent spine evaluation trigger"],
+  ["upperMotor", "Upper motor neuron findings", "Hyperreflexia, hand dysfunction, gait impairment"],
+  ["nightPain", "Pain worse at night or lying flat", "Concerning pattern in VMFH algorithm"]
+];
+
+const workupItems = [
+  ["pt", "Physical therapy or supervised home exercise trial", "Common prerequisite unless urgent findings are present"],
+  ["activity", "Activity modification and self-management plan", "Education, pacing, sleep, work modification"],
+  ["goals", "Functional goals documented", "Work, exercise, daily activity, sleep, or family interaction targets"],
+  ["nsaid", "NSAID or acetaminophen trial when appropriate", "Include contraindications if not used"],
+  ["adjuvant", "Condition-specific adjuvant medication trial", "Topical, neuropathic, antidepressant, or muscle relaxant option"],
+  ["twoNonopioid", "Two first-line non-opioid options tried when persistent", "Beyond acetaminophen/ibuprofen alone when appropriate"],
+  ["imaging", "Relevant imaging reviewed or ordered", "MRI/CT/X-ray when clinically indicated"],
+  ["psych", "Behavioral health or mood/sleep contributors addressed", "Especially for chronic pain complexity"],
+  ["yellowFlags", "Yellow flags assessed", "Sleep, anxiety/depression, deconditioning, supports, work status, trauma history"],
+  ["expectations", "Expectations and self-management discussed", "Realistic pain relief, pacing, activity, reassurance, and multimodal plan"],
+  ["adherence", "Medication adherence and tolerance checked", "Confirm regimen use and side effects before escalation or referral"],
+  ["reassess", "Treatment response reassessed", "Goals not met despite plan adjustment or adequate conservative care"]
+];
+
+const painPatterns = [
+  ["neckAxial", "Neck axial pain", "Cervical spine dominant; facet, discogenic, myofascial, or mechanical pattern"],
+  ["lowBackAxial", "Low back axial pain", "Lumbar spine dominant; facet, discogenic, myofascial, or mechanical pattern"],
+  ["thoracicAxial", "Thoracic axial pain", "Mid-back or rib/thoracic spine dominant pain"],
+  ["upperRadicular", "Cervical radiculopathy / arm pain", "Neck or cervical nerve-root pattern into shoulder, arm, or hand"],
+  ["lowerRadicular", "Lumbar radiculopathy / leg pain", "Low back or lumbar nerve-root pattern into buttock, leg, or foot"],
+  ["stenosis", "Lumbar stenosis / claudication", "Leg symptoms with walking or extension, improved by flexion/sitting"],
+  ["sacroiliac", "Sacroiliac / pelvic girdle pain", "Buttock/groin/lateral hip region; provocative maneuvers helpful"],
+  ["neuropathicUpper", "Upper extremity neuropathic pain", "Burning, electric, allodynia, post-herpetic, diabetic, or nerve injury pattern"],
+  ["neuropathicLower", "Lower extremity neuropathic pain", "Burning, electric, allodynia, diabetic neuropathy, or nerve injury pattern"],
+  ["widespread", "Widespread or centralized pain", "Fibromyalgia-like, fatigue/sleep/mood amplification, diffuse tenderness"],
+  ["postsurgicalSpine", "Persistent postsurgical spine pain", "Prior cervical/thoracic/lumbar surgery or persistent pain after intervention"],
+  ["postsurgicalJoint", "Persistent postsurgical joint/extremity pain", "Prior limb/joint surgery or persistent pain after intervention"],
+  ["headachePattern", "Headache or craniofacial pain", "Migraine, cervicogenic, trigeminal, TMJ, occipital neuralgia pattern"]
+];
+
+const patternRegions = {
+  neckAxial: ["cervical"],
+  lowBackAxial: ["lumbar"],
+  thoracicAxial: ["thoracic", "ribs"],
+  upperRadicular: ["cervical", "leftArm", "rightArm"],
+  lowerRadicular: ["lumbar", "leftLeg", "rightLeg"],
+  stenosis: ["lumbar", "leftLeg", "rightLeg"],
+  sacroiliac: ["pelvis", "sacroiliac"],
+  neuropathicUpper: ["leftArm", "rightArm"],
+  neuropathicLower: ["leftLeg", "rightLeg"],
+  widespread: ["skull", "cervical", "thoracic", "lumbar", "ribs", "pelvis", "sacroiliac", "leftArm", "rightArm", "leftLeg", "rightLeg"],
+  postsurgicalSpine: ["cervical", "thoracic", "lumbar"],
+  postsurgicalJoint: ["pelvis", "leftArm", "rightArm", "leftLeg", "rightLeg"],
+  headachePattern: ["skull", "cervical"]
+};
+
+const contextItems = [
+  ["procedure", "Procedure may be indicated", "Epidural, facet, SI, peripheral joint/nerve, neuromodulation evaluation"],
+  ["diagnosis", "Diagnosis unclear after PCP workup", "Pain specialist asked to confirm diagnosis or phenotype"],
+  ["function", "Persistent functional impairment", "Pain limits ADLs, sleep, work, mobility, or caregiving"],
+  ["opioid", "Opioid complexity or risk mitigation needed", "Dose escalation, taper question, safety concerns, MME threshold"],
+  ["sideEffects", "Unacceptable treatment side effects", "Pain improving but side effects require alternative options"],
+  ["declinesMeds", "Patient declines medication-focused care", "Referral for non-pharmacologic, procedural, or multidisciplinary options"],
+  ["misuse", "Concern for medication misuse or abnormal UDS", "Consider addiction medicine when misuse is primary"],
+  ["pcpComfort", "PCP uncomfortable continuing current plan", "Referral for shared plan and scope support"]
+];
+
+const $ = (id) => document.getElementById(id);
+let deferredInstallPrompt = null;
+
+function renderChecks(containerId, items) {
+  const container = $(containerId);
+  container.innerHTML = items.map(([id, label, hint]) => `
+    <label class="check-item">
+      <input type="checkbox" id="${id}">
+      <span>${label}<small>${hint}</small></span>
+    </label>
+  `).join("");
+}
+
+function checked(id) {
+  return Boolean($(id)?.checked);
+}
+
+function checkedLabels(items) {
+  return items.filter(([id]) => checked(id)).map(([, label]) => label);
+}
+
+function redFlagReviewComplete() {
+  return checked("noRedFlags") && checkedLabels(redFlags).length === 0;
+}
+
+function value(id) {
+  return $(id).value.trim();
+}
+
+function selectedReasons() {
+  const reasons = [];
+  const pain = Number($("painScore").value || 0);
+
+  if ($("duration").value === "chronic") reasons.push("chronic pain duration");
+  if ($("duration").value === "subacute") reasons.push("subacute pain with potential escalation");
+  if ($("functionImpact").value === "moderate") reasons.push("moderate functional limitation");
+  if ($("functionImpact").value === "severe") reasons.push("severe functional limitation");
+  if (pain >= 7) reasons.push("high pain intensity");
+  if (checked("procedure")) reasons.push("possible interventional procedure target");
+  if (checked("diagnosis")) reasons.push("diagnosis remains unclear after primary care workup");
+  if (checked("opioid")) reasons.push("opioid complexity or safety planning needed");
+  if (checked("sideEffects")) reasons.push("unacceptable treatment side effects");
+  if (checked("declinesMeds")) reasons.push("patient preference against medication-focused care");
+  if (checked("pcpComfort")) reasons.push("PCP requests shared pain plan support");
+  if (checked("reassess")) reasons.push("treatment goals not met after reassessment");
+  if (checked("pt") && Number($("ptSessions").value || 0) >= 4) reasons.push("adequate PT or supervised exercise trial");
+  if (checked("twoNonopioid") || checked("adjuvant")) reasons.push("non-opioid medication trials attempted");
+  if (checked("upperRadicular")) reasons.push("cervical radiculopathy with arm pain");
+  if (checked("lowerRadicular")) reasons.push("lumbar radiculopathy with leg pain");
+  if (checked("stenosis")) reasons.push("claudication or stenosis phenotype");
+  if (checked("sacroiliac")) reasons.push("SI/hip/pelvic girdle phenotype");
+  if (checked("neuropathicUpper") || checked("neuropathicLower")) reasons.push("neuropathic pain phenotype");
+  if (checked("widespread")) reasons.push("widespread or centralized pain phenotype");
+  if (checked("postsurgicalSpine") || checked("postsurgicalJoint")) reasons.push("persistent postsurgical pain");
+  if (checked("headachePattern")) reasons.push("headache or craniofacial pain phenotype");
+  if (checked("yellowFlags")) reasons.push("prominent yellow flags or psychosocial complexity");
+
+  return reasons;
+}
+
+function updateBodyMap() {
+  document.querySelectorAll(".highlight-map [data-region]").forEach((part) => {
+    part.classList.remove("active", "emphasis");
+  });
+
+  painPatterns.forEach(([id]) => {
+    if (!checked(id)) return;
+    const className = id === "widespread" ? "emphasis" : "active";
+    patternRegions[id].forEach((region) => {
+      document.querySelectorAll(`.highlight-map [data-region="${region}"]`).forEach((part) => {
+        part.classList.add(className);
+      });
+    });
+  });
+}
+
+function updateGatedSections() {
+  const unlocked = redFlagReviewComplete();
+  document.querySelectorAll("[data-gated='true']").forEach((section) => {
+    section.classList.toggle("locked", !unlocked);
+    section.querySelectorAll("input, select, textarea, button").forEach((control) => {
+      control.disabled = !unlocked;
+    });
+  });
+}
+
+function evaluate() {
+  $("painValue").textContent = $("painScore").value;
+  updateBodyMap();
+
+  const red = checkedLabels(redFlags);
+  if (red.length > 0 && checked("noRedFlags")) {
+    $("noRedFlags").checked = false;
+  }
+  updateGatedSections();
+  const workup = checkedLabels(workupItems);
+  const patterns = checkedLabels(painPatterns);
+  const contexts = checkedLabels(contextItems);
+  const cauda = checked("bowelBladder") || checked("saddle") || checked("bilateralSciatica");
+  const urgentSpine = checked("motorLoss") || checked("upperMotor") || checked("trauma");
+  const malignancyInfection = checked("cancer") || checked("fever") || checked("nightPain");
+  const ptReady = checked("pt") && Number($("ptSessions").value || 0) >= 4;
+  const imagingReady = checked("imaging") || value("imagingSummary").length > 8;
+  const medicationReady = checked("nsaid") || checked("adjuvant") || value("medSummary").length > 8;
+  const functionReferral = checked("function") || $("functionImpact").value !== "mild";
+  const reasonReady = contexts.length > 0 || value("referralQuestion").length > 8;
+  const reasons = selectedReasons();
+
+  let indicationScore = 0;
+  if ($("duration").value === "subacute") indicationScore += 10;
+  if ($("duration").value === "chronic") indicationScore += 18;
+  if ($("functionImpact").value === "moderate") indicationScore += 14;
+  if ($("functionImpact").value === "severe") indicationScore += 22;
+  if (Number($("painScore").value || 0) >= 7) indicationScore += 8;
+  if (checked("procedure")) indicationScore += 18;
+  if (checked("diagnosis")) indicationScore += 14;
+  if (checked("opioid")) indicationScore += 14;
+  if (checked("sideEffects")) indicationScore += 12;
+  if (checked("declinesMeds")) indicationScore += 10;
+  if (checked("pcpComfort")) indicationScore += 10;
+  if (checked("reassess")) indicationScore += 12;
+  if (checked("pt") && Number($("ptSessions").value || 0) >= 4) indicationScore += 10;
+  if (checked("twoNonopioid") || checked("adjuvant")) indicationScore += 8;
+  if (patterns.length > 0) indicationScore += Math.min(18, patterns.length * 6);
+  indicationScore = Math.min(indicationScore, 100);
+
+  let score = 0;
+  if (ptReady) score += 22;
+  if (imagingReady) score += 22;
+  if (medicationReady) score += 18;
+  if (checked("twoNonopioid")) score += 8;
+  if (checked("activity")) score += 10;
+  if (checked("goals")) score += 8;
+  if (checked("psych")) score += 6;
+  if (checked("yellowFlags")) score += 6;
+  if (checked("expectations")) score += 6;
+  if (checked("adherence")) score += 6;
+  if (checked("reassess")) score += 6;
+  if (patterns.length > 0) score += 6;
+  if (functionReferral) score += 10;
+  if (reasonReady) score += 10;
+  score = Math.min(score, 100);
+  let referralScore = Math.round((indicationScore * 0.55) + (score * 0.45));
+  if (!redFlagReviewComplete() && red.length === 0) referralScore = 0;
+  const supportText = reasons.length ? reasons.slice(0, 4).join(", ") : "the selected clinical factors";
+
+  const missing = [];
+  if (!redFlagReviewComplete() && red.length === 0) missing.push("Complete red flag review and attest that no red flags are present before routine referral workup.");
+  if (!ptReady) missing.push("Document PT/home exercise trial, number of sessions, or why PT is unsafe/not feasible.");
+  if (!imagingReady && $("duration").value !== "acute") missing.push("Add relevant imaging result or rationale for imaging not indicated.");
+  if (!medicationReady) missing.push("Summarize medication trials, contraindications, intolerance, and response.");
+  if ($("duration").value === "chronic" && !checked("twoNonopioid")) missing.push("For chronic pain, document adequate trials of at least two first-line non-opioid options when clinically appropriate.");
+  if (!checked("goals")) missing.push("Document functional goals and whether they were met after the initial care plan.");
+  if (!checked("yellowFlags")) missing.push("Assess yellow flags: sleep, mood/anxiety, deconditioning, social supports, work status, trauma history, and substance use context.");
+  if (!checked("expectations")) missing.push("Document expectation-setting and self-management plan: activity, pacing, reassurance, and multimodal options.");
+  if (!checked("adherence")) missing.push("Confirm medication adherence and side effects before escalating therapy or referral.");
+  if (patterns.length === 0) missing.push("Select a pain pattern/phenotype so the specialist can triage procedure vs medication vs rehab needs.");
+  if (!reasonReady) missing.push("State a focused referral question for pain management.");
+  if (checked("misuse")) missing.push("If misuse or abnormal UDS is the primary issue, addiction medicine may be more appropriate than pain clinic alone.");
+
+  let level = "routine";
+  let title = "Pain management referral not yet clearly indicated";
+  let detail = "The selected information does not yet show enough pain complexity, functional impairment, failed conservative care, or a focused specialist question.";
+
+  if (cauda) {
+    level = "danger";
+    title = "Emergency evaluation";
+    detail = "Possible cauda equina pattern. Send to ED or urgent spine pathway rather than routine pain management referral.";
+    referralScore = 100;
+  } else if (urgentSpine) {
+    level = "danger";
+    title = "Urgent spine evaluation";
+    detail = "Progressive neurologic deficit, upper motor neuron findings, trauma, or instability should route to urgent MRI and neurosurgery/orthopedic spine evaluation.";
+    referralScore = 100;
+  } else if (malignancyInfection) {
+    level = "warn";
+    title = "Urgent imaging / serious disease exclusion";
+    detail = "Cancer, infection, night pain, or systemic features should prompt urgent imaging/workup before routine pain management referral.";
+    referralScore = Math.max(referralScore, 80);
+  } else if (!redFlagReviewComplete()) {
+    level = "warn";
+    title = "Red flag review required";
+    detail = "Routine pain referral support is locked until all red flags are reviewed and the no-red-flags attestation is selected.";
+  } else if ($("duration").value === "acute" && referralScore >= 45) {
+    level = "warn";
+    title = "Acute pain: expedited review or eConsult";
+    detail = `This is not a routine chronic pain referral pathway. Because ${supportText} is present, consider acute pain/surgical/specialty review, urgent eConsult, or chronic pain advice to expedite triage.`;
+  } else if ($("duration").value === "acute") {
+    level = "routine";
+    title = "Acute pain pathway";
+    detail = "Manage as acute pain or refer to the appropriate acute specialty service. Chronic pain referral is usually reserved for persistent pain or complex cases needing expedited advice.";
+  } else if (referralScore >= 75) {
+    level = "ready";
+    title = "Pain management referral ready";
+    detail = `Referral is supported by ${supportText}. The selected clinical factors and workup documentation support pain management referral.`;
+  } else if (referralScore >= 55) {
+    level = "warn";
+    title = "Referral likely appropriate, complete remaining items";
+    detail = `Referral is reasonably supported by ${supportText}. Complete the missing workup or documentation items before sending if this is not urgent.`;
+  } else if (referralScore >= 40) {
+    level = "warn";
+    title = "Referral may be appropriate";
+    detail = `Some referral factors are present: ${supportText}. Consider additional primary care management or clarify the specialist question before referral.`;
+  }
+
+  const recommendation = $("recommendation");
+  recommendation.className = `recommendation ${level === "danger" ? "danger" : level === "warn" ? "warn" : ""}`;
+  recommendation.innerHTML = `<strong>${title}</strong><br>${detail}`;
+
+  const pill = $("readinessPill");
+  pill.className = `status-pill ${level === "ready" ? "ready" : level === "warn" ? "warn" : level === "danger" ? "danger" : ""}`;
+  pill.textContent = level === "danger" ? "Urgent" : level === "ready" ? "Ready" : level === "warn" ? "Needs review" : "Incomplete";
+
+  $("meterFill").style.width = `${referralScore}%`;
+  $("scoreText").textContent = `Referral readiness score: ${referralScore}/100`;
+  $("missingList").innerHTML = missing.length ? missing.map((item) => `<li>${item}</li>`).join("") : "<li>No major routine referral gaps identified.</li>";
+
+  const requiredFields = ["patientInitials", "age", "imagingSummary", "medSummary", "referralQuestion"];
+  const completedFields = requiredFields.filter((id) => value(id).length > 0).length + workup.length + patterns.length + contexts.length + red.length;
+  const possible = requiredFields.length + workupItems.length + painPatterns.length + contextItems.length + redFlags.length;
+  $("completionText").textContent = `${Math.round((completedFields / possible) * 100)}% complete`;
+
+  $("referralNote").value = buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing });
+}
+
+function buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing }) {
+  const initials = value("patientInitials") || "[patient]";
+  const durationText = $("duration").selectedOptions[0].textContent;
+  const impactText = $("functionImpact").selectedOptions[0].textContent;
+  const ptSessions = value("ptSessions") || "0";
+  const lines = [
+    `Pain Management Referral Readiness Note`,
+    ``,
+    `Patient: ${initials}    Age: ${value("age") || "[age]"}`,
+    `Pain region/pattern: ${patterns.length ? patterns.join("; ") : "[select pain region/pattern]"}`,
+    `Duration: ${durationText}`,
+    `Pain severity/function: ${$("painScore").value}/10; ${impactText}`,
+    ``,
+    `Decision support recommendation: ${title}`,
+    `${detail}`,
+    `Referral readiness score: ${referralScore}/100`,
+    `Referral-supporting factors: ${reasons.length ? reasons.join("; ") : "None strongly identified from selected inputs"}`,
+    ``,
+    `Red flags screened: ${red.length ? red.join("; ") : "None documented as present"}`,
+    ``,
+    `Completed conservative care/workup:`,
+    `- PT/home exercise: ${checked("pt") ? "Yes" : "No/unclear"}; sessions: ${ptSessions}`,
+    `- Workup items: ${workup.length ? workup.join("; ") : "None selected"}`,
+    `- Imaging: ${value("imagingSummary") || "[summarize relevant imaging or rationale]"}`,
+    `- Medication trials/response: ${value("medSummary") || "[NSAID/APAP/adjuvant/topical/opioid history, contraindications, response]"}`,
+    `- Prior procedures/specialists: ${value("priorCare") || "[none documented]"}`,
+    ``,
+    `Reason for pain management referral:`,
+    `${contexts.length ? contexts.join("; ") : "[select referral context]"}`,
+    `${value("referralQuestion") || "[focused referral question]"}`,
+    ``,
+    `Items to complete/clarify:`,
+    `${missing.length ? missing.map((item) => `- ${item}`).join("\n") : "- No major routine gaps identified."}`,
+    ``,
+    `Safety note: This support output requires clinician review and must be reconciled with local referral requirements, payer policy, and emergency precautions.`
+  ];
+  return lines.join("\n");
+}
+
+function bindEvents() {
+  document.querySelectorAll("input, select, textarea").forEach((element) => {
+    element.addEventListener("input", evaluate);
+    element.addEventListener("change", evaluate);
+  });
+
+  document.querySelectorAll("[data-clear]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(`#${button.dataset.clear} input[type="checkbox"]`).forEach((box) => {
+        box.checked = false;
+      });
+      if (button.dataset.clear === "redFlags") {
+        $("noRedFlags").checked = false;
+      }
+      evaluate();
+    });
+  });
+
+  $("noRedFlags").addEventListener("change", () => {
+    if (checked("noRedFlags")) {
+      redFlags.forEach(([id]) => {
+        $(id).checked = false;
+      });
+    }
+    evaluate();
+  });
+
+  redFlags.forEach(([id]) => {
+    $(id).addEventListener("change", () => {
+      if (checked(id)) {
+        $("noRedFlags").checked = false;
+      }
+      evaluate();
+    });
+  });
+
+  $("copyNote").addEventListener("click", async () => {
+    await navigator.clipboard.writeText($("referralNote").value);
+    $("copyNote").textContent = "Copied";
+    setTimeout(() => {
+      $("copyNote").textContent = "Copy Note";
+    }, 1300);
+  });
+
+  $("printPage").addEventListener("click", () => window.print());
+
+  $("installApp").addEventListener("click", async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      updateInstallButton();
+      return;
+    }
+    showInstallHelp();
+  });
+
+  $("closeInstallDialog").addEventListener("click", () => {
+    $("installDialog").close();
+  });
+}
+
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function isIos() {
+  return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+}
+
+function updateInstallButton() {
+  const button = $("installApp");
+  if (isStandalone()) {
+    button.hidden = true;
+    return;
+  }
+  button.hidden = false;
+  button.textContent = deferredInstallPrompt ? "Install" : "Install";
+}
+
+function showInstallHelp() {
+  const message = isIos()
+    ? "On iPhone or iPad, tap the Safari Share button, then choose Add to Home Screen."
+    : "If a native install prompt does not appear, open this page in Chrome, Edge, or Android Chrome and use the browser menu to install the app.";
+  $("installMessage").textContent = message;
+  $("installDialog").showModal();
+}
+
+function setupInstallSupport() {
+  updateInstallButton();
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallButton();
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    updateInstallButton();
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
+}
+
+renderChecks("redFlags", redFlags);
+renderChecks("workupChecks", workupItems);
+renderChecks("painPatterns", painPatterns);
+renderChecks("referralContext", contextItems);
+bindEvents();
+setupInstallSupport();
+evaluate();
