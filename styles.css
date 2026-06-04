@@ -579,6 +579,16 @@ button.secondary {
     width: auto;
   }
 
+  .decision-rail {
+    display: block;
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+
   .workspace,
   .source-list,
   .button-row,
