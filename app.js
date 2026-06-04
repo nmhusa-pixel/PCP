@@ -76,6 +76,7 @@ let clinicFinderShown = false;
 let lastClinicPosition = null;
 let clinicFinderMode = "referral";
 let referralHandoffReady = false;
+let restoreReferralNoteAfterPrint = false;
 
 function renderChecks(containerId, items) {
   const container = $(containerId);
@@ -307,6 +308,19 @@ function maybePromptForLocationSetup() {
       $("clinicFinderDialog").showModal();
     }
   }, 700);
+}
+
+function prepareReferralNoteForPrint() {
+  const panel = $("referralNotePanel");
+  restoreReferralNoteAfterPrint = panel.hidden;
+  panel.hidden = false;
+}
+
+function restoreReferralNoteAfterPrinting() {
+  if (!restoreReferralNoteAfterPrint) return;
+  $("referralNotePanel").hidden = true;
+  $("referralNoteToggle").setAttribute("aria-expanded", "false");
+  restoreReferralNoteAfterPrint = false;
 }
 
 function evaluate() {
@@ -554,9 +568,12 @@ function bindEvents() {
   });
 
   $("printPage").addEventListener("click", () => {
+    prepareReferralNoteForPrint();
     window.print();
     window.setTimeout(showClinicFinderAfterHandoff, 500);
   });
+
+  window.addEventListener("afterprint", restoreReferralNoteAfterPrinting);
 
   $("sourcesToggle").addEventListener("click", () => {
     const toggle = $("sourcesToggle");

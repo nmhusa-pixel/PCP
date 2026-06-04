@@ -118,15 +118,14 @@ h2 {
   text-align: center;
 }
 
-.banner-score {
+.dropdown-score {
   margin: 0;
   padding: 10px 12px;
   border: 1px solid #cbd4cc;
-  border-radius: 999px;
+  border-radius: 6px;
   background: #fbfcfb;
   color: var(--ink);
   font-weight: 800;
-  white-space: nowrap;
 }
 
 .banner-missing {
@@ -740,6 +739,7 @@ button.handoff-ready {
   .app-shell {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto 1fr;
+    row-gap: 0;
   }
 
   .topbar {
@@ -747,27 +747,32 @@ button.handoff-ready {
     grid-row: 1;
     position: sticky;
     top: 0;
-    z-index: 30;
+    z-index: 40;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
   }
 
   .workspace {
     grid-column: 1;
     grid-row: 3;
+    margin-top: 16px;
   }
 
   .decision-rail {
     grid-column: 1;
     grid-row: 2;
     position: sticky;
-    top: 88px;
-    z-index: 20;
+    top: 86px;
+    z-index: 35;
     max-height: min(34vh, 300px);
     padding-top: 0;
     overflow: auto;
     overscroll-behavior: contain;
     background: var(--bg);
     border: 4px solid rgba(49, 92, 154, 0.72);
-    border-radius: 8px;
+    border-top: 0;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
     box-shadow: 0 8px 24px rgba(49, 92, 154, 0.18);
   }
 
@@ -812,7 +817,6 @@ button.handoff-ready {
     justify-content: space-between;
   }
 
-  .banner-score,
   .banner-missing,
   .install-button,
   .status-pill {
@@ -826,7 +830,7 @@ button.handoff-ready {
   }
 
   .decision-rail {
-    top: 132px;
+    top: 172px;
     max-height: min(33vh, 260px);
   }
 
@@ -870,6 +874,7 @@ button.handoff-ready {
   }
 
   .workspace,
+  .topbar,
   .source-list,
   .button-row,
   .decision-card:not(.referral-note-card) {
@@ -884,6 +889,11 @@ button.handoff-ready {
 
   .formatted-referral-note {
     display: none;
+  }
+
+  #referralNotePanel[hidden],
+  #referralNotePanel {
+    display: block;
   }
 
   .print-referral-note {
