@@ -482,7 +482,9 @@ button.secondary {
     overflow: auto;
     overscroll-behavior: contain;
     background: var(--bg);
-    border-bottom: 1px solid var(--line);
+    border: 2px solid rgba(49, 92, 154, 0.58);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(49, 92, 154, 0.18);
   }
 
   .decision-card {
