@@ -460,6 +460,10 @@ button.secondary {
   line-height: 1.4;
 }
 
+.print-referral-note {
+  display: none;
+}
+
 .button-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -561,6 +565,10 @@ button.secondary {
 }
 
 @media print {
+  @page {
+    margin: 0.55in;
+  }
+
   body {
     background: #fff;
   }
@@ -568,16 +576,40 @@ button.secondary {
   .app-shell {
     display: block;
     padding: 0;
+    width: auto;
   }
 
   .workspace,
   .source-list,
-  .button-row {
+  .button-row,
+  .decision-card:not(.referral-note-card) {
     display: none;
   }
 
   .decision-card {
     box-shadow: none;
     border: 0;
+    padding: 0;
+  }
+
+  #referralNote {
+    display: none;
+  }
+
+  .print-referral-note {
+    display: block;
+    margin: 0;
+    color: #000;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 10.5pt;
+    line-height: 1.35;
+  }
+
+  .decision-card h2 {
+    margin-bottom: 12pt;
+    color: #000;
+    font-size: 16pt;
   }
 }

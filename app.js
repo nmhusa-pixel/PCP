@@ -290,7 +290,9 @@ function evaluate() {
   const possible = requiredFields.length + workupItems.length + painPatterns.length + contextItems.length + redFlags.length;
   $("completionText").textContent = `${Math.round((completedFields / possible) * 100)}% complete`;
 
-  $("referralNote").value = buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing });
+  const note = buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing });
+  $("referralNote").value = note;
+  $("printReferralNote").textContent = note;
 }
 
 function buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing }) {
