@@ -323,6 +323,24 @@ function restoreReferralNoteAfterPrinting() {
   restoreReferralNoteAfterPrint = false;
 }
 
+function updateFixedRailMetrics() {
+  const topbar = document.querySelector(".topbar");
+  const rail = document.querySelector(".decision-rail");
+  if (!topbar || !rail) return;
+
+  if (!window.matchMedia("(max-width: 1180px)").matches) {
+    document.documentElement.style.removeProperty("--fixed-rail-top");
+    document.documentElement.style.removeProperty("--fixed-rail-height");
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    const topbarBottom = Math.max(0, Math.round(topbar.getBoundingClientRect().bottom));
+    document.documentElement.style.setProperty("--fixed-rail-top", `${topbarBottom}px`);
+    document.documentElement.style.setProperty("--fixed-rail-height", `${Math.ceil(rail.offsetHeight)}px`);
+  });
+}
+
 function evaluate() {
   $("painValue").textContent = $("painScore").value;
   updateBodyMap();
@@ -457,6 +475,7 @@ function evaluate() {
   $("referralNotePrompt").hidden = !referralHandoffReady;
   $("copyNote").classList.toggle("handoff-ready", referralHandoffReady);
   $("printPage").classList.toggle("handoff-ready", referralHandoffReady);
+  updateFixedRailMetrics();
 }
 
 function buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing }) {
@@ -574,6 +593,7 @@ function bindEvents() {
   });
 
   window.addEventListener("afterprint", restoreReferralNoteAfterPrinting);
+  window.addEventListener("resize", updateFixedRailMetrics);
 
   $("sourcesToggle").addEventListener("click", () => {
     const toggle = $("sourcesToggle");
@@ -697,4 +717,5 @@ renderChecks("referralContext", contextItems);
 bindEvents();
 setupInstallSupport();
 evaluate();
+updateFixedRailMetrics();
 maybePromptForLocationSetup();

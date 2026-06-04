@@ -763,14 +763,16 @@ button.handoff-ready {
   .workspace {
     grid-column: 1;
     grid-row: 3;
-    margin-top: 16px;
+    margin-top: calc(var(--fixed-rail-height, 240px) + 16px);
   }
 
   .decision-rail {
     grid-column: 1;
     grid-row: 2;
-    position: sticky;
-    top: 86px;
+    position: fixed;
+    top: var(--fixed-rail-top, 86px);
+    left: max(22px, calc((100vw - 1480px) / 2 + 22px));
+    right: max(22px, calc((100vw - 1480px) / 2 + 22px));
     z-index: 35;
     max-height: min(34vh, 300px);
     padding-top: 0;
@@ -837,7 +839,9 @@ button.handoff-ready {
   }
 
   .decision-rail {
-    top: 172px;
+    top: var(--fixed-rail-top, 172px);
+    left: 12px;
+    right: 12px;
     max-height: min(33vh, 260px);
   }
 
