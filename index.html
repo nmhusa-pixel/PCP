@@ -173,7 +173,7 @@
 
         <section class="decision-card referral-note-card">
           <h2>Referral Note</h2>
-          <textarea id="referralNote" rows="13" readonly></textarea>
+          <div id="formattedReferralNote" class="formatted-referral-note"></div>
           <pre id="printReferralNote" class="print-referral-note"></pre>
           <div class="button-row">
             <button id="copyNote" type="button">Copy Note</button>
@@ -182,19 +182,21 @@
         </section>
 
         <section class="decision-card">
-          <h2>Sources</h2>
-          <ul class="source-list">
-            <li><a href="https://www.vmfh.org/content/dam/vmfhorg/pdf/refer-a-patient/Back-Pain-Referral-Algorithm-Primary-Care.pdf">VMFH back pain referral algorithm</a></li>
-            <li><a href="https://painmed.org/for-the-primary-care-provider-when-to-refer-to-a-pain-specialist/">AAPM referral recommendations</a></li>
-            <li><a href="https://www.cdc.gov/mmwr/volumes/71/rr/rr7103a1.htm">CDC opioid prescribing guideline, 2022</a></li>
-            <li><a href="https://acsearch.acr.org/docs/69483/Narrative/">ACR low back pain imaging criteria</a></li>
-            <li><a href="https://www.acponline.org/sites/default/files/acp-policy-library/guidelines/noninvasive_treatments_for_chronic_low_back_pain_2017.pdf">ACP low back pain treatment guideline</a></li>
-            <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5903506/">Evidence-based pain medicine for primary care physicians</a></li>
-            <li><a href="https://spinepaindocs.com/about/pain-chart/">Spine Pain Institute referral pain chart</a></li>
-            <li><a href="https://onbaseext.phs.org/PEL/DisplayDocument?ContentID=PEL_00955399">Chronic pain management algorithm</a></li>
-            <li><a href="https://pathwaysbc-production-content-item-documents.s3.amazonaws.com/documents/7229/original/Chronic%20Pain%20Algorithm%20Oct%2017%202024%20-%20FINAL%20.pdf?1729181409">Pathways BC chronic pain algorithm, 2024</a></li>
-            <li><a href="https://formularymk.nhs.uk/docs/formulary/04/Chronic%20Pain%20Guideline%20for%20Primary%20Care%20July%202020.pdf">Milton Keynes NHS chronic pain guideline, 2020</a></li>
-          </ul>
+          <button id="sourcesToggle" type="button" class="sources-toggle" aria-expanded="false" aria-controls="sourcesPanel">Sources</button>
+          <div id="sourcesPanel" class="sources-panel" hidden>
+            <ul class="source-list">
+              <li><a href="https://www.vmfh.org/content/dam/vmfhorg/pdf/refer-a-patient/Back-Pain-Referral-Algorithm-Primary-Care.pdf">VMFH back pain referral algorithm</a></li>
+              <li><a href="https://painmed.org/for-the-primary-care-provider-when-to-refer-to-a-pain-specialist/">AAPM referral recommendations</a></li>
+              <li><a href="https://www.cdc.gov/mmwr/volumes/71/rr/rr7103a1.htm">CDC opioid prescribing guideline, 2022</a></li>
+              <li><a href="https://acsearch.acr.org/docs/69483/Narrative/">ACR low back pain imaging criteria</a></li>
+              <li><a href="https://www.acponline.org/sites/default/files/acp-policy-library/guidelines/noninvasive_treatments_for_chronic_low_back_pain_2017.pdf">ACP low back pain treatment guideline</a></li>
+              <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5903506/">Evidence-based pain medicine for primary care physicians</a></li>
+              <li><a href="https://spinepaindocs.com/about/pain-chart/">Spine Pain Institute referral pain chart</a></li>
+              <li><a href="https://onbaseext.phs.org/PEL/DisplayDocument?ContentID=PEL_00955399">Chronic pain management algorithm</a></li>
+              <li><a href="https://pathwaysbc-production-content-item-documents.s3.amazonaws.com/documents/7229/original/Chronic%20Pain%20Algorithm%20Oct%2017%202024%20-%20FINAL%20.pdf?1729181409">Pathways BC chronic pain algorithm, 2024</a></li>
+              <li><a href="https://formularymk.nhs.uk/docs/formulary/04/Chronic%20Pain%20Guideline%20for%20Primary%20Care%20July%202020.pdf">Milton Keynes NHS chronic pain guideline, 2020</a></li>
+            </ul>
+          </div>
           <p class="disclaimer">Clinical decision support only. It does not replace clinician judgment, local policy, payer rules, or emergency evaluation.</p>
         </section>
       </aside>

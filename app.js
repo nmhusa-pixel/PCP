@@ -97,6 +97,44 @@ function value(id) {
   return $(id).value.trim();
 }
 
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+let currentReferralNote = "";
+
+function formatReferralNote(note) {
+  const headingLabels = [
+    "Pain Management Referral Readiness Note",
+    "Patient:",
+    "Pain region/pattern:",
+    "Duration:",
+    "Pain severity/function:",
+    "Decision support recommendation:",
+    "Referral readiness score:",
+    "Referral-supporting factors:",
+    "Red flags screened:",
+    "Completed conservative care/workup:",
+    "Reason for pain management referral:",
+    "Items to complete/clarify:",
+    "Safety note:"
+  ];
+
+  return note.split("\n").map((line) => {
+    const safeLine = escapeHtml(line);
+    if (!line.trim()) return "";
+    const heading = headingLabels.find((label) => line.startsWith(label));
+    if (!heading) return `<p>${safeLine}</p>`;
+    const rest = safeLine.slice(escapeHtml(heading).length);
+    return `<p><strong>${escapeHtml(heading)}</strong>${rest}</p>`;
+  }).join("");
+}
+
 function selectedReasons() {
   const reasons = [];
   const pain = Number($("painScore").value || 0);
@@ -291,8 +329,9 @@ function evaluate() {
   $("completionText").textContent = `${Math.round((completedFields / possible) * 100)}% complete`;
 
   const note = buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing });
-  $("referralNote").value = note;
+  currentReferralNote = note;
   $("printReferralNote").textContent = note;
+  $("formattedReferralNote").innerHTML = formatReferralNote(note);
 }
 
 function buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing }) {
@@ -371,7 +410,7 @@ function bindEvents() {
   });
 
   $("copyNote").addEventListener("click", async () => {
-    await navigator.clipboard.writeText($("referralNote").value);
+    await navigator.clipboard.writeText(currentReferralNote);
     $("copyNote").textContent = "Copied";
     setTimeout(() => {
       $("copyNote").textContent = "Copy Note";
@@ -379,6 +418,14 @@ function bindEvents() {
   });
 
   $("printPage").addEventListener("click", () => window.print());
+
+  $("sourcesToggle").addEventListener("click", () => {
+    const toggle = $("sourcesToggle");
+    const panel = $("sourcesPanel");
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!expanded));
+    panel.hidden = expanded;
+  });
 
   $("installApp").addEventListener("click", async () => {
     if (deferredInstallPrompt) {

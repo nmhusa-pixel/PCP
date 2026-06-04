@@ -453,11 +453,39 @@ button.secondary {
   margin: 7px 0;
 }
 
-#referralNote {
-  min-height: 260px;
-  font-family: "Courier New", Courier, monospace;
+.sources-toggle {
+  width: 100%;
+  color: var(--accent-2);
+  background: #edf3fb;
+}
+
+.sources-toggle[aria-expanded="true"] {
+  color: #fff;
+  background: var(--accent-2);
+}
+
+.sources-panel[hidden] {
+  display: none;
+}
+
+.formatted-referral-note {
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid #cbd4cc;
+  border-radius: 6px;
+  padding: 10px 11px;
+  color: var(--ink);
+  background: #fbfcfb;
   font-size: 0.86rem;
   line-height: 1.4;
+}
+
+.formatted-referral-note p {
+  margin: 0 0 8px;
+}
+
+.formatted-referral-note strong {
+  color: var(--ink);
 }
 
 .print-referral-note {
@@ -523,9 +551,8 @@ button.secondary {
     margin: 10px 0 6px;
   }
 
-  #referralNote {
-    min-height: 112px;
-    max-height: 112px;
+  .formatted-referral-note {
+    max-height: 142px;
   }
 
   .decision-card:last-child {
@@ -602,7 +629,7 @@ button.secondary {
     padding: 0;
   }
 
-  #referralNote {
+  .formatted-referral-note {
     display: none;
   }
 
