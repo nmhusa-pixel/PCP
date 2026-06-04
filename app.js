@@ -435,7 +435,7 @@ function evaluate() {
   recommendation.innerHTML = `<strong>${title}</strong><br>${detail}`;
 
   const pill = $("readinessPill");
-  pill.className = `status-pill ${level === "ready" ? "ready" : level === "warn" ? "warn" : level === "danger" ? "danger" : ""}`;
+  pill.className = `missing-status ${level === "ready" ? "ready" : level === "warn" ? "warn" : level === "danger" ? "danger" : ""}`;
   pill.textContent = level === "danger" ? "Urgent" : level === "ready" ? "Ready" : level === "warn" ? "Needs review" : "Incomplete";
 
   $("meterFill").style.width = `${referralScore}%`;

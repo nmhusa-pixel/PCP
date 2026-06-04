@@ -108,16 +108,6 @@ h2 {
   font-size: 1.05rem;
 }
 
-.status-pill {
-  min-width: 128px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  color: #fff;
-  background: var(--muted);
-  font-weight: 700;
-  text-align: center;
-}
-
 .dropdown-score {
   margin: 0;
   padding: 10px 12px;
@@ -155,18 +145,6 @@ h2 {
 
 .banner-missing-panel[hidden] {
   display: none;
-}
-
-.status-pill.ready {
-  background: var(--ready);
-}
-
-.status-pill.warn {
-  background: var(--warn);
-}
-
-.status-pill.danger {
-  background: var(--danger);
 }
 
 .panel,
@@ -647,6 +625,36 @@ button.secondary {
   background: var(--accent-2);
 }
 
+.missing-label {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.missing-status {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.missing-status.ready {
+  color: var(--ready);
+}
+
+.missing-status.warn {
+  color: var(--warn);
+}
+
+.missing-status.danger {
+  color: var(--danger);
+}
+
+.missing-toggle[aria-expanded="true"] .missing-status {
+  color: #fff;
+}
+
 .count-badge {
   display: inline-grid;
   min-width: 28px;
@@ -818,8 +826,7 @@ button.handoff-ready {
   }
 
   .banner-missing,
-  .install-button,
-  .status-pill {
+  .install-button {
     flex: 1 1 100%;
   }
 
