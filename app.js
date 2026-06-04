@@ -11,18 +11,9 @@ const redFlags = [
 ];
 
 const workupItems = [
-  ["pt", "Physical therapy or supervised home exercise trial", "Common prerequisite unless urgent findings are present"],
-  ["activity", "Activity modification and self-management plan", "Education, pacing, sleep, work modification"],
-  ["goals", "Functional goals documented", "Work, exercise, daily activity, sleep, or family interaction targets"],
-  ["nsaid", "NSAID or acetaminophen trial when appropriate", "Include contraindications if not used"],
-  ["adjuvant", "Condition-specific adjuvant medication trial", "Topical, neuropathic, antidepressant, or muscle relaxant option"],
-  ["twoNonopioid", "Two first-line non-opioid options tried when persistent", "Beyond acetaminophen/ibuprofen alone when appropriate"],
-  ["imaging", "Relevant imaging reviewed or ordered", "MRI/CT/X-ray when clinically indicated"],
-  ["psych", "Behavioral health or mood/sleep contributors addressed", "Especially for chronic pain complexity"],
-  ["yellowFlags", "Yellow flags assessed", "Sleep, anxiety/depression, deconditioning, supports, work status, trauma history"],
-  ["expectations", "Expectations and self-management discussed", "Realistic pain relief, pacing, activity, reassurance, and multimodal plan"],
-  ["adherence", "Medication adherence and tolerance checked", "Confirm regimen use and side effects before escalation or referral"],
-  ["reassess", "Treatment response reassessed", "Goals not met despite plan adjustment or adequate conservative care"]
+  ["pt", "PT / conservative therapy trial", "PT, supervised home exercise, activity modification, or reason not feasible"],
+  ["imaging", "Imaging reviewed or ordered", "X-ray/MRI/CT/US when clinically indicated, or rationale not needed"],
+  ["medicationTrial", "Medication trials documented", "NSAID/APAP/topical/neuropathic/opioid history, contraindications, side effects, response"]
 ];
 
 const painPatterns = [
@@ -150,9 +141,8 @@ function selectedReasons() {
   if (checked("sideEffects")) reasons.push("unacceptable treatment side effects");
   if (checked("declinesMeds")) reasons.push("patient preference against medication-focused care");
   if (checked("pcpComfort")) reasons.push("PCP requests shared pain plan support");
-  if (checked("reassess")) reasons.push("treatment goals not met after reassessment");
   if (checked("pt") && Number($("ptSessions").value || 0) >= 4) reasons.push("adequate PT or supervised exercise trial");
-  if (checked("twoNonopioid") || checked("adjuvant")) reasons.push("non-opioid medication trials attempted");
+  if (checked("medicationTrial") || value("medSummary").length > 8) reasons.push("medication trials documented");
   if (checked("upperRadicular")) reasons.push("cervical radiculopathy with arm pain");
   if (checked("lowerRadicular")) reasons.push("lumbar radiculopathy with leg pain");
   if (checked("stenosis")) reasons.push("claudication or stenosis phenotype");
@@ -161,7 +151,6 @@ function selectedReasons() {
   if (checked("widespread")) reasons.push("widespread or centralized pain phenotype");
   if (checked("postsurgicalSpine") || checked("postsurgicalJoint")) reasons.push("persistent postsurgical pain");
   if (checked("headachePattern")) reasons.push("headache or craniofacial pain phenotype");
-  if (checked("yellowFlags")) reasons.push("prominent yellow flags or psychosocial complexity");
 
   return reasons;
 }
@@ -209,7 +198,7 @@ function evaluate() {
   const malignancyInfection = checked("cancer") || checked("fever") || checked("nightPain");
   const ptReady = checked("pt") && Number($("ptSessions").value || 0) >= 4;
   const imagingReady = checked("imaging") || value("imagingSummary").length > 8;
-  const medicationReady = checked("nsaid") || checked("adjuvant") || value("medSummary").length > 8;
+  const medicationReady = checked("medicationTrial") || value("medSummary").length > 8;
   const functionReferral = checked("function") || $("functionImpact").value !== "mild";
   const reasonReady = contexts.length > 0 || value("referralQuestion").length > 8;
   const reasons = selectedReasons();
@@ -226,27 +215,18 @@ function evaluate() {
   if (checked("sideEffects")) indicationScore += 12;
   if (checked("declinesMeds")) indicationScore += 10;
   if (checked("pcpComfort")) indicationScore += 10;
-  if (checked("reassess")) indicationScore += 12;
   if (checked("pt") && Number($("ptSessions").value || 0) >= 4) indicationScore += 10;
-  if (checked("twoNonopioid") || checked("adjuvant")) indicationScore += 8;
+  if (medicationReady) indicationScore += 8;
   if (patterns.length > 0) indicationScore += Math.min(18, patterns.length * 6);
   indicationScore = Math.min(indicationScore, 100);
 
   let score = 0;
-  if (ptReady) score += 22;
-  if (imagingReady) score += 22;
-  if (medicationReady) score += 18;
-  if (checked("twoNonopioid")) score += 8;
-  if (checked("activity")) score += 10;
-  if (checked("goals")) score += 8;
-  if (checked("psych")) score += 6;
-  if (checked("yellowFlags")) score += 6;
-  if (checked("expectations")) score += 6;
-  if (checked("adherence")) score += 6;
-  if (checked("reassess")) score += 6;
+  if (ptReady) score += 28;
+  if (imagingReady) score += 28;
+  if (medicationReady) score += 28;
   if (patterns.length > 0) score += 6;
-  if (functionReferral) score += 10;
-  if (reasonReady) score += 10;
+  if (functionReferral) score += 5;
+  if (reasonReady) score += 5;
   score = Math.min(score, 100);
   let referralScore = Math.round((indicationScore * 0.55) + (score * 0.45));
   if (!redFlagReviewComplete() && red.length === 0) referralScore = 0;
@@ -257,11 +237,6 @@ function evaluate() {
   if (!ptReady) missing.push("Document PT/home exercise trial, number of sessions, or why PT is unsafe/not feasible.");
   if (!imagingReady && $("duration").value !== "acute") missing.push("Add relevant imaging result or rationale for imaging not indicated.");
   if (!medicationReady) missing.push("Summarize medication trials, contraindications, intolerance, and response.");
-  if ($("duration").value === "chronic" && !checked("twoNonopioid")) missing.push("For chronic pain, document adequate trials of at least two first-line non-opioid options when clinically appropriate.");
-  if (!checked("goals")) missing.push("Document functional goals and whether they were met after the initial care plan.");
-  if (!checked("yellowFlags")) missing.push("Assess yellow flags: sleep, mood/anxiety, deconditioning, social supports, work status, trauma history, and substance use context.");
-  if (!checked("expectations")) missing.push("Document expectation-setting and self-management plan: activity, pacing, reassurance, and multimodal options.");
-  if (!checked("adherence")) missing.push("Confirm medication adherence and side effects before escalating therapy or referral.");
   if (patterns.length === 0) missing.push("Select a pain pattern/phenotype so the specialist can triage procedure vs medication vs rehab needs.");
   if (!reasonReady) missing.push("State a focused referral question for pain management.");
   if (checked("misuse")) missing.push("If misuse or abnormal UDS is the primary issue, addiction medicine may be more appropriate than pain clinic alone.");
@@ -321,6 +296,7 @@ function evaluate() {
 
   $("meterFill").style.width = `${referralScore}%`;
   $("scoreText").textContent = `Referral readiness score: ${referralScore}/100`;
+  $("missingCount").textContent = String(missing.length);
   $("missingList").innerHTML = missing.length ? missing.map((item) => `<li>${item}</li>`).join("") : "<li>No major routine referral gaps identified.</li>";
 
   const requiredFields = ["patientInitials", "age", "imagingSummary", "medSummary", "referralQuestion"];
@@ -356,9 +332,8 @@ function buildNote({ red, workup, patterns, contexts, title, detail, referralSco
     ``,
     `Completed conservative care/workup:`,
     `- PT/home exercise: ${checked("pt") ? "Yes" : "No/unclear"}; sessions: ${ptSessions}`,
-    `- Workup items: ${workup.length ? workup.join("; ") : "None selected"}`,
     `- Imaging: ${value("imagingSummary") || "[summarize relevant imaging or rationale]"}`,
-    `- Medication trials/response: ${value("medSummary") || "[NSAID/APAP/adjuvant/topical/opioid history, contraindications, response]"}`,
+    `- Medication trials/response: ${value("medSummary") || "[NSAID/APAP/topical/neuropathic/opioid history, contraindications, response]"}`,
     `- Prior procedures/specialists: ${value("priorCare") || "[none documented]"}`,
     ``,
     `Reason for pain management referral:`,
@@ -422,6 +397,14 @@ function bindEvents() {
   $("sourcesToggle").addEventListener("click", () => {
     const toggle = $("sourcesToggle");
     const panel = $("sourcesPanel");
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!expanded));
+    panel.hidden = expanded;
+  });
+
+  $("missingToggle").addEventListener("click", () => {
+    const toggle = $("missingToggle");
+    const panel = $("missingPanel");
     const expanded = toggle.getAttribute("aria-expanded") === "true";
     toggle.setAttribute("aria-expanded", String(!expanded));
     panel.hidden = expanded;

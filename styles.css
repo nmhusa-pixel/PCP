@@ -453,6 +453,43 @@ button.secondary {
   margin: 7px 0;
 }
 
+.missing-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  color: var(--accent-2);
+  background: #edf3fb;
+}
+
+.missing-toggle[aria-expanded="true"] {
+  color: #fff;
+  background: var(--accent-2);
+}
+
+.count-badge {
+  display: inline-grid;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 4px 8px;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--warn);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.missing-toggle[aria-expanded="true"] .count-badge {
+  color: var(--accent-2);
+  background: #fff;
+}
+
+#missingPanel[hidden] {
+  display: none;
+}
+
 .sources-toggle {
   width: 100%;
   color: var(--accent-2);
@@ -524,12 +561,12 @@ button.secondary {
     position: sticky;
     top: 88px;
     z-index: 20;
-    max-height: min(42vh, 360px);
+    max-height: min(34vh, 300px);
     padding-top: 0;
     overflow: auto;
     overscroll-behavior: contain;
     background: var(--bg);
-    border: 2px solid rgba(49, 92, 154, 0.58);
+    border: 4px solid rgba(49, 92, 154, 0.72);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(49, 92, 154, 0.18);
   }
@@ -577,6 +614,7 @@ button.secondary {
 
   .decision-rail {
     top: 132px;
+    max-height: min(33vh, 260px);
   }
 
   .form-grid,

@@ -166,9 +166,14 @@
           <p id="scoreText" class="score-text"></p>
         </section>
 
-        <section class="decision-card">
-          <h2>Missing Before Referral</h2>
-          <ul id="missingList" class="clean-list"></ul>
+        <section class="decision-card missing-card">
+          <button id="missingToggle" type="button" class="missing-toggle" aria-expanded="false" aria-controls="missingPanel">
+            <span>Missing Before Referral</span>
+            <span id="missingCount" class="count-badge">0</span>
+          </button>
+          <div id="missingPanel" hidden>
+            <ul id="missingList" class="clean-list"></ul>
+          </div>
         </section>
 
         <section class="decision-card referral-note-card">
