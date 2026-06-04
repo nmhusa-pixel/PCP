@@ -77,6 +77,8 @@ let lastClinicPosition = null;
 let clinicFinderMode = "referral";
 let referralHandoffReady = false;
 let restoreReferralNoteAfterPrint = false;
+let pendingClinicFinderAfterPrint = false;
+let printStartedAt = 0;
 
 function renderChecks(containerId, items) {
   const container = $(containerId);
@@ -321,6 +323,19 @@ function restoreReferralNoteAfterPrinting() {
   $("referralNotePanel").hidden = true;
   $("referralNoteToggle").setAttribute("aria-expanded", "false");
   restoreReferralNoteAfterPrint = false;
+}
+
+function finishPrintHandoff() {
+  restoreReferralNoteAfterPrinting();
+  if (!pendingClinicFinderAfterPrint) return;
+  pendingClinicFinderAfterPrint = false;
+  window.setTimeout(showClinicFinderAfterHandoff, 700);
+}
+
+function finishPrintHandoffAfterReturn() {
+  if (!pendingClinicFinderAfterPrint) return;
+  if (Date.now() - printStartedAt < 1200) return;
+  finishPrintHandoff();
 }
 
 function updateFixedRailMetrics() {
@@ -588,11 +603,16 @@ function bindEvents() {
 
   $("printPage").addEventListener("click", () => {
     prepareReferralNoteForPrint();
+    pendingClinicFinderAfterPrint = referralHandoffReady;
+    printStartedAt = Date.now();
     window.print();
-    window.setTimeout(showClinicFinderAfterHandoff, 500);
   });
 
-  window.addEventListener("afterprint", restoreReferralNoteAfterPrinting);
+  window.addEventListener("afterprint", finishPrintHandoff);
+  window.addEventListener("focus", finishPrintHandoffAfterReturn);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") finishPrintHandoffAfterReturn();
+  });
   window.addEventListener("resize", updateFixedRailMetrics);
 
   $("sourcesToggle").addEventListener("click", () => {
