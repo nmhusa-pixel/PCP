@@ -219,6 +219,28 @@
       </div>
       <p id="installMessage"></p>
     </dialog>
+    <dialog id="clinicFinderDialog" class="clinic-dialog">
+      <div class="dialog-header">
+        <h2>Local Pain Clinic Finder</h2>
+        <button id="closeClinicFinder" type="button" class="icon-button" aria-label="Close">x</button>
+      </div>
+      <p id="clinicFinderIntro" class="clinic-intro">Referral packet appears ready. Use device location to search for nearby pain clinics.</p>
+      <div class="clinic-controls">
+        <label>
+          Search radius
+          <select id="clinicRadius">
+            <option value="30">Within 30 miles</option>
+            <option value="50">Within 50 miles</option>
+            <option value="100">Within 100 miles</option>
+          </select>
+        </label>
+        <button id="useLocationForClinics" type="button">Use Location</button>
+      </div>
+      <button id="skipLocationSetup" type="button" class="secondary full-button" hidden>Not Now</button>
+      <p id="clinicFinderStatus" class="clinic-status">Location is only used for this search.</p>
+      <div id="clinicSearchLinks" class="clinic-links" hidden></div>
+      <p class="clinic-note">Direct clinic names, phone numbers, fax numbers, and referral URLs require a connected places/search service. Map results may show current contact information from the web.</p>
+    </dialog>
     <script src="app.js"></script>
   </body>
 </html>

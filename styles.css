@@ -373,7 +373,8 @@ button {
   background: #eef2ef;
 }
 
-.install-dialog {
+.install-dialog,
+.clinic-dialog {
   width: min(420px, calc(100vw - 32px));
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -383,7 +384,12 @@ button {
   box-shadow: var(--shadow);
 }
 
-.install-dialog::backdrop {
+.clinic-dialog {
+  width: min(560px, calc(100vw - 32px));
+}
+
+.install-dialog::backdrop,
+.clinic-dialog::backdrop {
   background: rgba(21, 24, 22, 0.42);
 }
 
@@ -395,10 +401,55 @@ button {
   margin-bottom: 10px;
 }
 
-.install-dialog p {
+.install-dialog p,
+.clinic-dialog p {
   margin: 0;
   color: var(--muted);
   line-height: 1.45;
+}
+
+.clinic-intro,
+.clinic-status,
+.clinic-note {
+  margin-top: 10px;
+}
+
+.clinic-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 16px;
+}
+
+.full-button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.clinic-links {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.clinic-links[hidden] {
+  display: none;
+}
+
+.clinic-links a {
+  display: block;
+  padding: 11px;
+  border: 1px solid #cbd4cc;
+  border-radius: 6px;
+  color: var(--accent-2);
+  background: #edf3fb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.clinic-note {
+  font-size: 0.82rem;
 }
 
 .ghost-button,
@@ -635,7 +686,8 @@ button.secondary {
   .form-grid,
   .form-grid.compact,
   .check-grid,
-  .pain-layout {
+  .pain-layout,
+  .clinic-controls {
     grid-template-columns: 1fr;
   }
 

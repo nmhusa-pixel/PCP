@@ -72,6 +72,9 @@ const referralQuestionTemplates = {
 
 const $ = (id) => document.getElementById(id);
 let deferredInstallPrompt = null;
+let clinicFinderShown = false;
+let lastClinicPosition = null;
+let clinicFinderMode = "referral";
 
 function renderChecks(containerId, items) {
   const container = $(containerId);
@@ -220,6 +223,77 @@ function autofillReferralQuestion() {
   question.dataset.autofilled = "true";
 }
 
+function clinicZoomForRadius(radius) {
+  if (radius <= 30) return 10;
+  if (radius <= 50) return 9;
+  return 8;
+}
+
+function buildClinicSearchLinks(position, radius) {
+  const { latitude, longitude } = position.coords;
+  const zoom = clinicZoomForRadius(Number(radius));
+  const query = encodeURIComponent("pain management clinic");
+  const spineQuery = encodeURIComponent("interventional pain management clinic");
+  const mapsAt = `${latitude},${longitude}`;
+  return [
+    {
+      label: `Google Maps: pain clinics within about ${radius} miles`,
+      url: `https://www.google.com/maps/search/${query}/@${mapsAt},${zoom}z`
+    },
+    {
+      label: "Google Maps: interventional pain clinics",
+      url: `https://www.google.com/maps/search/${spineQuery}/@${mapsAt},${zoom}z`
+    },
+    {
+      label: "Bing Maps: pain management clinics",
+      url: `https://www.bing.com/maps?q=${query}&cp=${latitude}~${longitude}&lvl=${zoom}`
+    }
+  ];
+}
+
+function renderClinicSearchLinks(position) {
+  const radius = $("clinicRadius").value;
+  const links = buildClinicSearchLinks(position, radius);
+  $("clinicSearchLinks").hidden = false;
+  $("clinicSearchLinks").innerHTML = links.map(({ label, url }) => `
+    <a href="${url}" target="_blank" rel="noopener">${label}</a>
+  `).join("");
+  $("clinicFinderStatus").textContent = `Search links built from current device location using a ${radius}-mile radius.`;
+}
+
+function setClinicFinderMode(mode) {
+  clinicFinderMode = mode;
+  const setupMode = mode === "setup";
+  $("clinicFinderIntro").textContent = setupMode
+    ? "Enable location once so the app can suggest nearby pain clinics when a referral packet is ready."
+    : "Referral packet appears ready. Use device location to search for nearby pain clinics.";
+  $("clinicFinderStatus").textContent = setupMode
+    ? "The browser will ask for location permission after you tap Use Location."
+    : "Location is only used for this search.";
+  $("skipLocationSetup").hidden = !setupMode;
+}
+
+function maybeShowClinicFinder(level, missing) {
+  if (clinicFinderShown || level !== "ready" || missing.length > 0) return;
+  clinicFinderShown = true;
+  setClinicFinderMode("referral");
+  if (typeof $("clinicFinderDialog").showModal === "function") {
+    $("clinicFinderDialog").showModal();
+  }
+}
+
+function maybePromptForLocationSetup() {
+  if (!isStandalone()) return;
+  if (localStorage.getItem("painReferralLocationSetup")) return;
+  setClinicFinderMode("setup");
+  localStorage.setItem("painReferralLocationSetup", "shown");
+  window.setTimeout(() => {
+    if (!$("clinicFinderDialog").open && typeof $("clinicFinderDialog").showModal === "function") {
+      $("clinicFinderDialog").showModal();
+    }
+  }, 700);
+}
+
 function evaluate() {
   $("painValue").textContent = $("painScore").value;
   updateBodyMap();
@@ -348,6 +422,7 @@ function evaluate() {
   currentReferralNote = note;
   $("printReferralNote").textContent = note;
   $("formattedReferralNote").innerHTML = formatReferralNote(note);
+  maybeShowClinicFinder(level, missing);
 }
 
 function buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing }) {
@@ -481,6 +556,43 @@ function bindEvents() {
   $("closeInstallDialog").addEventListener("click", () => {
     $("installDialog").close();
   });
+
+  $("closeClinicFinder").addEventListener("click", () => {
+    $("clinicFinderDialog").close();
+  });
+
+  $("skipLocationSetup").addEventListener("click", () => {
+    localStorage.setItem("painReferralLocationSetup", "dismissed");
+    $("clinicFinderDialog").close();
+  });
+
+  $("clinicRadius").addEventListener("change", () => {
+    if (lastClinicPosition) renderClinicSearchLinks(lastClinicPosition);
+  });
+
+  $("useLocationForClinics").addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      $("clinicFinderStatus").textContent = "Location is not available in this browser. Use the map app search for pain management clinics near the patient or clinic location.";
+      return;
+    }
+
+    $("clinicFinderStatus").textContent = "Requesting device location...";
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        lastClinicPosition = position;
+        localStorage.setItem("painReferralLocationSetup", "enabled");
+        renderClinicSearchLinks(position);
+        if (clinicFinderMode === "setup") {
+          $("clinicFinderStatus").textContent = "Location permission is enabled. Clinic suggestions will be available when a referral packet is ready.";
+        }
+      },
+      () => {
+        localStorage.setItem("painReferralLocationSetup", "dismissed");
+        $("clinicFinderStatus").textContent = "Location was not shared. Open your map app and search for pain management clinics near the patient or clinic location.";
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    );
+  });
 }
 
 function isStandalone() {
@@ -537,3 +649,4 @@ renderChecks("referralContext", contextItems);
 bindEvents();
 setupInstallSupport();
 evaluate();
+maybePromptForLocationSetup();
