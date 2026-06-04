@@ -59,6 +59,17 @@ const contextItems = [
   ["pcpComfort", "PCP uncomfortable continuing current plan", "Referral for shared plan and scope support"]
 ];
 
+const referralQuestionTemplates = {
+  procedure: "Please evaluate for an appropriate interventional pain procedure target and provide a multimodal pain management plan.",
+  diagnosis: "Please help clarify the pain diagnosis/phenotype after primary care workup and recommend next management steps.",
+  function: "Please evaluate persistent pain-related functional impairment and recommend options to improve ADLs, sleep, work, or mobility.",
+  opioid: "Please advise on opioid risk mitigation, tapering/escalation concerns, and non-opioid or procedural alternatives.",
+  sideEffects: "Please recommend alternative pain management options given unacceptable side effects with current treatment.",
+  declinesMeds: "Please evaluate for non-medication-focused pain management options, including procedural, rehabilitative, or multidisciplinary care.",
+  misuse: "Please advise on pain management options in the setting of medication misuse concern or abnormal UDS, and whether addiction medicine co-management is needed.",
+  pcpComfort: "Please provide shared pain management recommendations because the current plan is outside primary care comfort or scope."
+};
+
 const $ = (id) => document.getElementById(id);
 let deferredInstallPrompt = null;
 
@@ -181,6 +192,34 @@ function updateGatedSections() {
   });
 }
 
+function updateCollapsibleSections() {
+  const redReviewed = redFlagReviewComplete();
+  $("redFlagDetails").hidden = redReviewed;
+
+  const selectedContexts = contextItems.filter(([id]) => checked(id));
+  const contextCollapsed = selectedContexts.length > 0;
+  $("referralContextDetails").hidden = contextCollapsed;
+  $("editReferralContext").hidden = !contextCollapsed;
+  $("referralContextSummary").hidden = !contextCollapsed;
+  $("referralContextSummary").textContent = contextCollapsed
+    ? `Selected: ${selectedContexts.map(([, label]) => label).join("; ")}`
+    : "";
+}
+
+function autofillReferralQuestion() {
+  const selectedContexts = contextItems.filter(([id]) => checked(id));
+  if (!selectedContexts.length) return;
+
+  const question = $("referralQuestion");
+  if (question.value.trim() && question.dataset.autofilled !== "true") return;
+
+  const [firstId] = selectedContexts[0];
+  const extraLabels = selectedContexts.slice(1).map(([, label]) => label.toLowerCase());
+  const extraText = extraLabels.length ? ` Additional context: ${extraLabels.join("; ")}.` : "";
+  question.value = `${referralQuestionTemplates[firstId]}${extraText}`;
+  question.dataset.autofilled = "true";
+}
+
 function evaluate() {
   $("painValue").textContent = $("painScore").value;
   updateBodyMap();
@@ -190,6 +229,7 @@ function evaluate() {
     $("noRedFlags").checked = false;
   }
   updateGatedSections();
+  updateCollapsibleSections();
   const workup = checkedLabels(workupItems);
   const patterns = checkedLabels(painPatterns);
   const contexts = checkedLabels(contextItems);
@@ -382,6 +422,23 @@ function bindEvents() {
       }
       evaluate();
     });
+  });
+
+  contextItems.forEach(([id]) => {
+    $(id).addEventListener("change", () => {
+      autofillReferralQuestion();
+      evaluate();
+    });
+  });
+
+  $("referralQuestion").addEventListener("input", () => {
+    $("referralQuestion").dataset.autofilled = "false";
+  });
+
+  $("editReferralContext").addEventListener("click", () => {
+    $("referralContextDetails").hidden = false;
+    $("editReferralContext").hidden = true;
+    $("referralContextSummary").hidden = true;
   });
 
   $("copyNote").addEventListener("click", async () => {

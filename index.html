@@ -72,7 +72,9 @@
             <h2 id="redFlagsTitle">Red Flag Symptoms</h2>
             <button class="ghost-button" type="button" data-clear="redFlags">Clear</button>
           </div>
-          <div class="check-grid" id="redFlags"></div>
+          <div id="redFlagDetails" class="collapsible-body">
+            <div class="check-grid" id="redFlags"></div>
+          </div>
           <label class="check-item attestation">
             <input type="checkbox" id="noRedFlags">
             <span>No red flags after review<small>I reviewed all red flag items above and none are present.</small></span>
@@ -147,9 +149,12 @@
         <section class="panel gated-section" data-gated="true" aria-labelledby="contextTitle">
           <div class="panel-title">
             <h2 id="contextTitle">Referral Context</h2>
-            <span>What is the pain clinic being asked to do?</span>
+            <button id="editReferralContext" class="ghost-button" type="button" hidden>Edit</button>
           </div>
-          <div class="check-grid" id="referralContext"></div>
+          <p id="referralContextSummary" class="section-summary" hidden></p>
+          <div id="referralContextDetails" class="collapsible-body">
+            <div class="check-grid" id="referralContext"></div>
+          </div>
           <label class="full-label">
             Referral question
             <textarea id="referralQuestion" rows="3" placeholder="e.g., Evaluate for epidural steroid injection and multimodal chronic pain plan"></textarea>

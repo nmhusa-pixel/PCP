@@ -1,4 +1,4 @@
-const CACHE_NAME = "pain-referral-assistant-v27";
+const CACHE_NAME = "pain-referral-assistant-v28";
 const APP_ASSETS = [
   "./",
   "./index.html",
