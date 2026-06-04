@@ -457,8 +457,42 @@ button.secondary {
   }
 
   .decision-rail {
-    position: static;
-    max-height: none;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    order: -1;
+    max-height: 46vh;
+    padding-top: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .decision-card {
+    padding: 13px;
+  }
+
+  .decision-card h2 {
+    font-size: 0.98rem;
+  }
+
+  .recommendation {
+    margin-top: 9px;
+    padding: 11px;
+  }
+
+  .meter {
+    margin: 10px 0 6px;
+  }
+
+  #referralNote {
+    min-height: 112px;
+    max-height: 112px;
+  }
+
+  .decision-card:last-child {
+    display: none;
   }
 }
 
