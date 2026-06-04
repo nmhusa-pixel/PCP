@@ -176,6 +176,46 @@ h2 {
   margin-top: 16px;
 }
 
+.workup-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.workup-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(260px, 1.1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.workup-row .check-item,
+.workup-detail {
+  height: 100%;
+}
+
+.workup-detail {
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fbfcfb;
+}
+
+.workup-detail.disabled {
+  opacity: 0.5;
+  background: #f0f2f0;
+}
+
+.workup-detail input:disabled,
+.workup-detail textarea:disabled {
+  color: #8a948d;
+  background: #e9ede9;
+  cursor: not-allowed;
+}
+
+.workup-followup {
+  grid-template-columns: 1fr;
+}
+
 label,
 .full-label {
   display: grid;
@@ -706,6 +746,7 @@ button.handoff-ready {
   .form-grid,
   .form-grid.compact,
   .check-grid,
+  .workup-row,
   .pain-layout,
   .clinic-controls {
     grid-template-columns: 1fr;

@@ -125,20 +125,39 @@
             <h2 id="workupTitle">Completed Workup</h2>
             <span>PT, imaging, medication trials</span>
           </div>
-          <div class="check-grid" id="workupChecks"></div>
-          <div class="form-grid compact">
-            <label>
-              PT sessions completed
-              <input id="ptSessions" type="number" min="0" max="99" value="0">
-            </label>
-            <label>
-              Imaging date / result
-              <input id="imagingSummary" type="text" placeholder="e.g., MRI lumbar 5/2026: L4-5 stenosis">
-            </label>
-            <label>
-              Medication response
-              <textarea id="medSummary" rows="3" placeholder="Brief response, intolerance, contraindications, or ongoing regimen"></textarea>
-            </label>
+          <div class="workup-grid" id="workupChecks">
+            <div class="workup-row">
+              <label class="check-item">
+                <input type="checkbox" id="pt">
+                <span>PT / conservative therapy trial<small>PT, supervised home exercise, activity modification, or reason not feasible</small></span>
+              </label>
+              <label class="workup-detail" data-detail-for="pt">
+                PT sessions completed
+                <input id="ptSessions" type="number" min="0" max="99" value="0">
+              </label>
+            </div>
+            <div class="workup-row">
+              <label class="check-item">
+                <input type="checkbox" id="imaging">
+                <span>Imaging reviewed or ordered<small>X-ray/MRI/CT/US when clinically indicated, or rationale not needed</small></span>
+              </label>
+              <label class="workup-detail" data-detail-for="imaging">
+                Imaging study / date / result
+                <input id="imagingSummary" type="text" placeholder="e.g., MRI lumbar 5/2026: L4-5 stenosis">
+              </label>
+            </div>
+            <div class="workup-row">
+              <label class="check-item">
+                <input type="checkbox" id="medicationTrial">
+                <span>Medication trials documented<small>NSAID/APAP/topical/neuropathic/opioid history, contraindications, side effects, response</small></span>
+              </label>
+              <label class="workup-detail" data-detail-for="medicationTrial">
+                Medication response
+                <textarea id="medSummary" rows="3" placeholder="Brief response, intolerance, contraindications, or ongoing regimen"></textarea>
+              </label>
+            </div>
+          </div>
+          <div class="form-grid compact workup-followup">
             <label>
               Prior procedures or specialist input
               <textarea id="priorCare" rows="3" placeholder="Injections, ortho/neuro consult, behavioral health, etc."></textarea>

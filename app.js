@@ -196,6 +196,20 @@ function updateGatedSections() {
   });
 }
 
+function updateWorkupDetailStates() {
+  const unlocked = redFlagReviewComplete();
+  [
+    ["pt", "ptSessions"],
+    ["imaging", "imagingSummary"],
+    ["medicationTrial", "medSummary"]
+  ].forEach(([checkboxId, detailId]) => {
+    const enabled = unlocked && checked(checkboxId);
+    const detail = $(detailId);
+    detail.disabled = !enabled;
+    detail.closest(".workup-detail")?.classList.toggle("disabled", !enabled);
+  });
+}
+
 function updateCollapsibleSections() {
   const redReviewed = redFlagReviewComplete();
   $("redFlagDetails").hidden = redReviewed;
@@ -305,6 +319,7 @@ function evaluate() {
   }
   updateGatedSections();
   updateCollapsibleSections();
+  updateWorkupDetailStates();
   const workup = checkedLabels(workupItems);
   const patterns = checkedLabels(painPatterns);
   const contexts = checkedLabels(contextItems);
@@ -651,7 +666,6 @@ function setupInstallSupport() {
 }
 
 renderChecks("redFlags", redFlags);
-renderChecks("workupChecks", workupItems);
 renderChecks("painPatterns", painPatterns);
 renderChecks("referralContext", contextItems);
 bindEvents();
