@@ -15,17 +15,18 @@
   </head>
   <body>
     <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Primary care decision support</p>
+          <h1>Pain Referral Assistant</h1>
+        </div>
+        <div class="top-actions">
+          <button id="installApp" type="button" class="install-button" hidden>Install</button>
+          <div class="status-pill" id="readinessPill">Incomplete</div>
+        </div>
+      </header>
+
       <section class="workspace">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Primary care decision support</p>
-            <h1>Pain Referral Assistant</h1>
-          </div>
-          <div class="top-actions">
-            <button id="installApp" type="button" class="install-button" hidden>Install</button>
-            <div class="status-pill" id="readinessPill">Incomplete</div>
-          </div>
-        </header>
 
         <section class="panel intake-panel" aria-labelledby="intakeTitle">
           <div class="panel-title">
