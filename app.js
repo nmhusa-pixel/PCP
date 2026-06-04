@@ -75,6 +75,7 @@ let deferredInstallPrompt = null;
 let clinicFinderShown = false;
 let lastClinicPosition = null;
 let clinicFinderMode = "referral";
+let referralHandoffReady = false;
 
 function renderChecks(containerId, items) {
   const container = $(containerId);
@@ -273,8 +274,8 @@ function setClinicFinderMode(mode) {
   $("skipLocationSetup").hidden = !setupMode;
 }
 
-function maybeShowClinicFinder(level, missing) {
-  if (clinicFinderShown || level !== "ready" || missing.length > 0) return;
+function showClinicFinderAfterHandoff() {
+  if (clinicFinderShown || !referralHandoffReady) return;
   clinicFinderShown = true;
   setClinicFinderMode("referral");
   if (typeof $("clinicFinderDialog").showModal === "function") {
@@ -422,7 +423,10 @@ function evaluate() {
   currentReferralNote = note;
   $("printReferralNote").textContent = note;
   $("formattedReferralNote").innerHTML = formatReferralNote(note);
-  maybeShowClinicFinder(level, missing);
+  referralHandoffReady = level === "ready" && missing.length === 0;
+  $("referralActionPrompt").hidden = !referralHandoffReady;
+  $("copyNote").classList.toggle("handoff-ready", referralHandoffReady);
+  $("printPage").classList.toggle("handoff-ready", referralHandoffReady);
 }
 
 function buildNote({ red, workup, patterns, contexts, title, detail, referralScore, reasons, missing }) {
@@ -519,12 +523,16 @@ function bindEvents() {
   $("copyNote").addEventListener("click", async () => {
     await navigator.clipboard.writeText(currentReferralNote);
     $("copyNote").textContent = "Copied";
+    showClinicFinderAfterHandoff();
     setTimeout(() => {
       $("copyNote").textContent = "Copy Note";
     }, 1300);
   });
 
-  $("printPage").addEventListener("click", () => window.print());
+  $("printPage").addEventListener("click", () => {
+    window.print();
+    window.setTimeout(showClinicFinderAfterHandoff, 500);
+  });
 
   $("sourcesToggle").addEventListener("click", () => {
     const toggle = $("sourcesToggle");

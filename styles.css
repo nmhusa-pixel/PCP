@@ -591,6 +591,26 @@ button.secondary {
   color: var(--ink);
 }
 
+.action-prompt {
+  margin: 10px 0 0;
+  padding: 10px 11px;
+  border: 1px solid rgba(31, 122, 107, 0.35);
+  border-radius: 6px;
+  color: #185b4f;
+  background: #eef7f3;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.action-prompt[hidden] {
+  display: none;
+}
+
+button.handoff-ready {
+  box-shadow: 0 0 0 3px rgba(31, 122, 107, 0.18);
+}
+
 .print-referral-note {
   display: none;
 }
