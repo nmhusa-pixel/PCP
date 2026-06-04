@@ -440,6 +440,7 @@ function evaluate() {
   $("formattedReferralNote").innerHTML = formatReferralNote(note);
   referralHandoffReady = level === "ready" && missing.length === 0;
   $("referralActionPrompt").hidden = !referralHandoffReady;
+  $("referralNotePrompt").hidden = !referralHandoffReady;
   $("copyNote").classList.toggle("handoff-ready", referralHandoffReady);
   $("printPage").classList.toggle("handoff-ready", referralHandoffReady);
 }
@@ -533,6 +534,14 @@ function bindEvents() {
     $("referralContextDetails").hidden = false;
     $("editReferralContext").hidden = true;
     $("referralContextSummary").hidden = true;
+  });
+
+  $("referralNoteToggle").addEventListener("click", () => {
+    const toggle = $("referralNoteToggle");
+    const panel = $("referralNotePanel");
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!expanded));
+    panel.hidden = expanded;
   });
 
   $("copyNote").addEventListener("click", async () => {

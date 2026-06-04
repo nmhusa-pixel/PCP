@@ -21,6 +21,21 @@
           <h1>Pain Referral Assistant</h1>
         </div>
         <div class="top-actions">
+          <p id="scoreText" class="score-text banner-score">Referral readiness score: 0/100</p>
+          <div class="banner-missing">
+            <button id="missingToggle" type="button" class="missing-toggle" aria-expanded="false" aria-controls="missingPanel">
+              <span>Missing Before Referral</span>
+              <span id="missingCount" class="count-badge">0</span>
+            </button>
+            <div id="missingPanel" class="banner-missing-panel" hidden>
+              <ul id="missingList" class="clean-list"></ul>
+            </div>
+            <p id="referralActionPrompt" class="action-prompt" hidden>Referral packet is complete. Copy or print the note, then choose a local pain clinic referral option.</p>
+            <div class="button-row banner-note-actions">
+              <button id="copyNote" type="button">Copy Note</button>
+              <button id="printPage" type="button" class="secondary">Print</button>
+            </div>
+          </div>
           <button id="installApp" type="button" class="install-button" hidden>Install</button>
           <div class="status-pill" id="readinessPill">Incomplete</div>
         </div>
@@ -187,27 +202,16 @@
           <h2 id="decisionTitle">Recommendation</h2>
           <div id="recommendation" class="recommendation"></div>
           <div class="meter" aria-hidden="true"><span id="meterFill"></span></div>
-          <p id="scoreText" class="score-text"></p>
-        </section>
-
-        <section class="decision-card missing-card">
-          <button id="missingToggle" type="button" class="missing-toggle" aria-expanded="false" aria-controls="missingPanel">
-            <span>Missing Before Referral</span>
-            <span id="missingCount" class="count-badge">0</span>
-          </button>
-          <div id="missingPanel" hidden>
-            <ul id="missingList" class="clean-list"></ul>
-          </div>
         </section>
 
         <section class="decision-card referral-note-card">
-          <h2>Referral Note</h2>
-          <div id="formattedReferralNote" class="formatted-referral-note"></div>
-          <pre id="printReferralNote" class="print-referral-note"></pre>
-          <p id="referralActionPrompt" class="action-prompt" hidden>Referral packet is complete. Copy or print the note, then choose a local pain clinic referral option.</p>
-          <div class="button-row">
-            <button id="copyNote" type="button">Copy Note</button>
-            <button id="printPage" type="button" class="secondary">Print</button>
+          <button id="referralNoteToggle" type="button" class="note-toggle" aria-expanded="false" aria-controls="referralNotePanel">
+            <span>Referral Note</span>
+            <span id="referralNotePrompt" hidden>Ready: open to copy/print</span>
+          </button>
+          <div id="referralNotePanel" hidden>
+            <div id="formattedReferralNote" class="formatted-referral-note"></div>
+            <pre id="printReferralNote" class="print-referral-note"></pre>
           </div>
         </section>
 
