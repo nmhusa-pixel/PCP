@@ -224,6 +224,7 @@ function updateCollapsibleSections() {
   $("redFlagDetails").hidden = redFlagCollapsed;
   $("redFlagSummary").hidden = selectedRedFlags.length === 0;
   $("editRedFlags").hidden = selectedRedFlags.length === 0;
+  $("noRedFlagsAttestation").hidden = selectedRedFlags.length > 0;
   $("redFlagSummary").textContent = selectedRedFlags.length
     ? `Selected: ${selectedRedFlags.map(([, label]) => label).join("; ")}`
     : "";
@@ -421,7 +422,7 @@ function evaluate() {
   if (!redFlagReviewComplete() && red.length === 0) referralScore = 0;
   const supportText = reasons.length ? reasons.slice(0, 4).join(", ") : "the selected clinical factors";
   const redFlagExplanation = redItems.length
-    ? ` Selected red flag details: ${redItems.map(([, label, hint]) => `${label}: ${hint}`).join("; ")}.`
+    ? ` Selected red flags: ${redItems.map(([, label]) => label).join("; ")}. Clinical triggers: ${[...new Set(redItems.map(([, , hint]) => hint))].join("; ")}.`
     : "";
 
   const missing = [];
@@ -440,17 +441,17 @@ function evaluate() {
   if (cauda) {
     level = "danger";
     title = "Emergency evaluation";
-    detail = `Possible cauda equina pattern. Send to ED or urgent spine pathway rather than routine pain management referral.${redFlagExplanation}`;
+    detail = `Send to ED or urgent spine pathway rather than routine pain management referral.${redFlagExplanation}`;
     referralScore = 100;
   } else if (urgentSpine) {
     level = "danger";
     title = "Urgent spine evaluation";
-    detail = `Progressive neurologic deficit, upper motor neuron findings, trauma, or instability should route to urgent MRI and neurosurgery/orthopedic spine evaluation.${redFlagExplanation}`;
+    detail = `Route to urgent MRI and neurosurgery/orthopedic spine evaluation when appropriate.${redFlagExplanation}`;
     referralScore = 100;
   } else if (malignancyInfection) {
     level = "warn";
     title = "Urgent imaging / serious disease exclusion";
-    detail = `Cancer, infection, night pain, or systemic features should prompt urgent imaging/workup before routine pain management referral.${redFlagExplanation}`;
+    detail = `Prompt urgent imaging/workup before routine pain management referral.${redFlagExplanation}`;
     referralScore = Math.max(referralScore, 80);
   } else if (!redFlagReviewComplete()) {
     level = "warn";
