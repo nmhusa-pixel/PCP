@@ -80,12 +80,12 @@ let restoreReferralNoteAfterPrint = false;
 let pendingClinicFinderAfterPrint = false;
 let printStartedAt = 0;
 
-function renderChecks(containerId, items) {
+function renderChecks(containerId, items, showHints = true) {
   const container = $(containerId);
   container.innerHTML = items.map(([id, label, hint]) => `
     <label class="check-item">
       <input type="checkbox" id="${id}">
-      <span>${label}<small>${hint}</small></span>
+      <span>${label}${showHints && hint ? `<small>${hint}</small>` : ""}</span>
     </label>
   `).join("");
 }
@@ -96,6 +96,10 @@ function checked(id) {
 
 function checkedLabels(items) {
   return items.filter(([id]) => checked(id)).map(([, label]) => label);
+}
+
+function checkedItems(items) {
+  return items.filter(([id]) => checked(id));
 }
 
 function redFlagReviewComplete() {
@@ -215,7 +219,14 @@ function updateWorkupDetailStates() {
 
 function updateCollapsibleSections() {
   const redReviewed = redFlagReviewComplete();
-  $("redFlagDetails").hidden = redReviewed;
+  const selectedRedFlags = checkedItems(redFlags);
+  const redFlagCollapsed = redReviewed || selectedRedFlags.length > 0;
+  $("redFlagDetails").hidden = redFlagCollapsed;
+  $("redFlagSummary").hidden = selectedRedFlags.length === 0;
+  $("editRedFlags").hidden = selectedRedFlags.length === 0;
+  $("redFlagSummary").textContent = selectedRedFlags.length
+    ? `Selected: ${selectedRedFlags.map(([, label]) => label).join("; ")}`
+    : "";
 
   const selectedContexts = contextItems.filter(([id]) => checked(id));
   const contextCollapsed = selectedContexts.length > 0;
@@ -361,6 +372,7 @@ function evaluate() {
   updateBodyMap();
 
   const red = checkedLabels(redFlags);
+  const redItems = checkedItems(redFlags);
   if (red.length > 0 && checked("noRedFlags")) {
     $("noRedFlags").checked = false;
   }
@@ -408,6 +420,9 @@ function evaluate() {
   let referralScore = Math.round((indicationScore * 0.55) + (score * 0.45));
   if (!redFlagReviewComplete() && red.length === 0) referralScore = 0;
   const supportText = reasons.length ? reasons.slice(0, 4).join(", ") : "the selected clinical factors";
+  const redFlagExplanation = redItems.length
+    ? ` Selected red flag details: ${redItems.map(([, label, hint]) => `${label}: ${hint}`).join("; ")}.`
+    : "";
 
   const missing = [];
   if (!redFlagReviewComplete() && red.length === 0) missing.push("Complete red flag review and attest that no red flags are present before routine referral workup.");
@@ -425,22 +440,24 @@ function evaluate() {
   if (cauda) {
     level = "danger";
     title = "Emergency evaluation";
-    detail = "Possible cauda equina pattern. Send to ED or urgent spine pathway rather than routine pain management referral.";
+    detail = `Possible cauda equina pattern. Send to ED or urgent spine pathway rather than routine pain management referral.${redFlagExplanation}`;
     referralScore = 100;
   } else if (urgentSpine) {
     level = "danger";
     title = "Urgent spine evaluation";
-    detail = "Progressive neurologic deficit, upper motor neuron findings, trauma, or instability should route to urgent MRI and neurosurgery/orthopedic spine evaluation.";
+    detail = `Progressive neurologic deficit, upper motor neuron findings, trauma, or instability should route to urgent MRI and neurosurgery/orthopedic spine evaluation.${redFlagExplanation}`;
     referralScore = 100;
   } else if (malignancyInfection) {
     level = "warn";
     title = "Urgent imaging / serious disease exclusion";
-    detail = "Cancer, infection, night pain, or systemic features should prompt urgent imaging/workup before routine pain management referral.";
+    detail = `Cancer, infection, night pain, or systemic features should prompt urgent imaging/workup before routine pain management referral.${redFlagExplanation}`;
     referralScore = Math.max(referralScore, 80);
   } else if (!redFlagReviewComplete()) {
     level = "warn";
     title = "Red flag review required";
-    detail = "Review each red flag symptom first. Continue only when no red flags are present, then select the no-red-flags attestation to unlock routine pain referral support.";
+    detail = red.length
+      ? `A selected red flag should be routed before routine pain referral.${redFlagExplanation}`
+      : "Review each red flag symptom first. Continue only when no red flags are present, then select the no-red-flags attestation to unlock routine pain referral support.";
   } else if ($("duration").value === "acute" && referralScore >= 45) {
     level = "warn";
     title = "Acute pain: expedited review or eConsult";
@@ -565,6 +582,12 @@ function bindEvents() {
       }
       evaluate();
     });
+  });
+
+  $("editRedFlags").addEventListener("click", () => {
+    $("redFlagDetails").hidden = false;
+    $("redFlagSummary").hidden = true;
+    $("editRedFlags").hidden = true;
   });
 
   contextItems.forEach(([id]) => {
@@ -731,7 +754,7 @@ function setupInstallSupport() {
   }
 }
 
-renderChecks("redFlags", redFlags);
+renderChecks("redFlags", redFlags, false);
 renderChecks("painPatterns", painPatterns);
 renderChecks("referralContext", contextItems);
 bindEvents();

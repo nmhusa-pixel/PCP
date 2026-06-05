@@ -87,8 +87,12 @@
         <section class="panel red-flag-panel" aria-labelledby="redFlagsTitle">
           <div class="panel-title">
             <h2 id="redFlagsTitle">Red Flag Symptoms</h2>
-            <button class="ghost-button" type="button" data-clear="redFlags">Clear</button>
+            <div class="panel-actions">
+              <button id="editRedFlags" class="ghost-button" type="button" hidden>Edit</button>
+              <button class="ghost-button" type="button" data-clear="redFlags">Clear</button>
+            </div>
           </div>
+          <p id="redFlagSummary" class="section-summary red-flag-summary" hidden></p>
           <div id="redFlagDetails" class="collapsible-body">
             <div class="check-grid" id="redFlags"></div>
           </div>
